@@ -64,16 +64,17 @@ const dashboardSupportLinks = [
 
 const DashboardNavigation = () => {
   return (
-    <div className="flex flex-col justify-between pt-10 pb-10 pl-6 pr-6 items-center w-52 min-h-screen border-gray-100 border-r-2">
+    <div className="flex flex-col justify-between py-10 px-6 items-center w-52 min-h-screen border-gray-100 border-r-2">
       <div className="flex flex-col items-center">
         <Image
           src={Logo}
           alt="logo"
+          priority={true}
           className="w-28 rounded-lg drop-shadow-lg shadow-black"
         />
         <div className="flex flex-col gap-5 mt-16">
           {dashboardNavLinks.map((item) => (
-            <Link href={item.link}>
+            <Link href={item.link} key={item.link}>
               <div
                 className={`nav__item ${
                   item.active && 'bg-defaultBlue-300 text-white'
@@ -88,7 +89,7 @@ const DashboardNavigation = () => {
       </div>
       <div className="flex flex-col gap-5 mt-16">
         {dashboardSupportLinks.map((item) => (
-          <Link href={item.link}>
+          <Link href={item.link} key={item.link}>
             <div className="nav__item">
               {<item.icon className="w-5 h-5" />}
               <p className="ml-2 font-regular">{item.title}</p>

@@ -1,5 +1,6 @@
 'use client';
 import DashboardNavigation from '@/components/DashboardNavigation';
+import DashboardTopBar from '@/components/DashboardTopBar';
 import { useAuth } from '@/contexts/authContext';
 import { useRouter } from 'next/navigation';
 import React, { ReactNode, useEffect } from 'react';
@@ -14,10 +15,19 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     }
   }, [userLoggedIn, router]);
   return (
-    <div className="flex">
-      <DashboardNavigation />
-      {children}
-    </div>
+    <>
+      <div className="hidden md:flex">
+        <DashboardNavigation />
+        <div className="flex flex-col w-full">
+          <DashboardTopBar />
+          <div className="flex px-16 py-11">{children}</div>
+        </div>
+      </div>
+      <div className="flex flex-col items-center justify-center min-h-screen md:hidden">
+        <p>Currently, the app is not designed for mobile devices.</p>
+        <p>Please open an app in a larger window.</p>
+      </div>
+    </>
   );
 };
 
