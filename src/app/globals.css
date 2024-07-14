@@ -52,4 +52,8 @@ input:focus {
   .login__submit {
     @apply w-80 bg-defaultBlue-300 px-3 py-3 rounded-md text-white hover:text-defaultBlue-300 border-defaultBlue-300 border-2 hover:bg-white transition-all;
   }
+
+  .nav__item {
+    @apply cursor-pointer flex w-40 h-8 items-center justify-start rounded-lg p-2;
+  }
 }
