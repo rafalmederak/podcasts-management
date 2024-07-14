@@ -43,3 +43,13 @@ input:focus {
   background: #f3f4f6;
   border-radius: 20px;
 }
+
+@layer components {
+  .login__input {
+    @apply w-80 bg-defaultBlue-50 px-3 py-3 rounded-md;
+  }
+
+  .login__submit {
+    @apply w-80 bg-defaultBlue-300 px-3 py-3 rounded-md text-white hover:text-defaultBlue-300 border-defaultBlue-300 border-2 hover:bg-white transition-all;
+  }
+}
