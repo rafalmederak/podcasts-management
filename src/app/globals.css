@@ -57,3 +57,7 @@ input:focus {
     @apply cursor-pointer flex w-40 h-8 items-center justify-start rounded-lg p-2;
   }
 }
+
+.page__title {
+  @apply text-2xl font-semibold;
+}
