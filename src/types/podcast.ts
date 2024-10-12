@@ -1,7 +1,7 @@
 export type Podcast = {
-  id: number;
+  id: string;
   title: string;
   host: string;
   photo: string;
-  trophiesEarned: number;
+  totalTrophies: number;
 };
