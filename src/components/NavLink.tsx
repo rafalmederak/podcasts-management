@@ -8,7 +8,7 @@ type Props = {
 
 const NavLink = ({ item, pathname }: Props) => {
   return (
-    <Link href={item.link} key={item.link}>
+    <Link href={item.link}>
       <div
         className={`nav__item ${
           pathname == item.link && 'bg-defaultBlue-300 text-white'
