@@ -11,16 +11,16 @@ import {
   TrophyIcon,
   UsersIcon,
 } from '@heroicons/react/24/solid';
-import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import NavLink from './NavLink';
 
 const dashboardLink = '/dashboard';
 
-const dashboardNavLinks = [
+const dashboardNavLinks: NavItem[] = [
   {
     title: 'Home',
     icon: HomeIcon,
     link: dashboardLink + '/home',
-    active: true,
   },
   {
     title: 'Podcasts',
@@ -63,6 +63,7 @@ const dashboardSupportLinks = [
 ];
 
 const DashboardNavigation = () => {
+  const pathname = usePathname();
   return (
     <div className="flex flex-col justify-between py-10 px-6 items-center w-52 min-h-screen border-gray-100 border-r-2">
       <div className="flex flex-col items-center">
@@ -74,27 +75,13 @@ const DashboardNavigation = () => {
         />
         <div className="flex flex-col gap-5 mt-16">
           {dashboardNavLinks.map((item) => (
-            <Link href={item.link} key={item.link}>
-              <div
-                className={`nav__item ${
-                  item.active && 'bg-defaultBlue-300 text-white'
-                }`}
-              >
-                {<item.icon className="w-5 h-5" />}
-                <p className="ml-2 font-regular">{item.title}</p>
-              </div>
-            </Link>
+            <NavLink item={item} pathname={pathname} />
           ))}
         </div>
       </div>
       <div className="flex flex-col gap-5 mt-16">
         {dashboardSupportLinks.map((item) => (
-          <Link href={item.link} key={item.link}>
-            <div className="nav__item">
-              {<item.icon className="w-5 h-5" />}
-              <p className="ml-2 font-regular">{item.title}</p>
-            </div>
-          </Link>
+          <NavLink item={item} pathname={pathname} />
         ))}
       </div>
     </div>
