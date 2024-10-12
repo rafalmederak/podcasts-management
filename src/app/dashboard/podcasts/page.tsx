@@ -1,27 +1,32 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useMemo, useState } from 'react';
+import useSWR from 'swr';
+import Image from 'next/image';
 
 //types
 import { Podcast } from '@/types/podcast';
 
-//utils
-import { samplePodcastsData } from '@/utils/samplePodcastsData';
+//services
+import { getPodcasts } from '@/services/podcasts.service';
 
 //icons
 import { MagnifyingGlassIcon, TrophyIcon } from '@heroicons/react/24/solid';
 
 const PodcastsPage = () => {
+  const { data, mutate } = useSWR('podcasts', getPodcasts, {
+    suspense: true,
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredSampleData = useMemo(() => {
-    return samplePodcastsData.filter(
+  const filteredData = useMemo(() => {
+    return data.filter(
       (item: Podcast) =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.host.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [samplePodcastsData, searchQuery]);
+  }, [data, searchQuery]);
 
   return (
     <div className="flex flex-col w-full gap-10">
@@ -37,10 +42,10 @@ const PodcastsPage = () => {
         />
       </div>
       <div className="flex flex-wrap gap-12 w-full">
-        {filteredSampleData.length === 0 ? (
+        {filteredData.length === 0 ? (
           <div className="w-full h-full text-lg flex">No podcasts found.</div>
         ) : (
-          filteredSampleData.map((item) => (
+          filteredData.map((item) => (
             <div
               key={item.id}
               className="flex flex-col items-start justify-start w-96 hover:scale-105 cursor-pointer transition-all"
@@ -62,7 +67,7 @@ const PodcastsPage = () => {
                 <div className="relative w-7 h-7 ml-2">
                   <TrophyIcon className="w-6 h-6 mr-[0.3rem]" />
                   <span className="absolute bottom-0 right-0 bg-defaultBeige-300 h-[1.1rem] min-w-[1.1rem] max-w-[1.6rem] p-[0.2rem] rounded-full flex items-center justify-center text-xs">
-                    {item.trophiesEarned}
+                    {item.totalTrophies}
                   </span>
                 </div>
               </div>
