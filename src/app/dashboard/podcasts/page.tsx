@@ -12,15 +12,15 @@ import { getPodcasts } from '@/services/podcasts.service';
 
 //icons
 import { MagnifyingGlassIcon, TrophyIcon } from '@heroicons/react/24/solid';
+import Link from 'next/link';
 
 const PodcastsPage = () => {
-  const { data, mutate } = useSWR('podcasts', getPodcasts, {
-    suspense: true,
-  });
+  const { data } = useSWR('podcasts', getPodcasts);
 
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredData = useMemo(() => {
+    if (!data) return [];
     return data.filter(
       (item: Podcast) =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,8 +46,9 @@ const PodcastsPage = () => {
           <div className="w-full h-full text-lg flex">No podcasts found.</div>
         ) : (
           filteredData.map((item) => (
-            <div
+            <Link
               key={item.id}
+              href={`/dashboard/podcasts/${item.id}`}
               className="flex flex-col items-start justify-start w-96 hover:scale-105 cursor-pointer transition-all"
             >
               <div className="w-full h-72 relative">
@@ -71,7 +72,7 @@ const PodcastsPage = () => {
                   </span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>
