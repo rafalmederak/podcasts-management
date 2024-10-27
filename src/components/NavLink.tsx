@@ -11,7 +11,7 @@ const NavLink = ({ item, pathname }: Props) => {
     <Link href={item.link}>
       <div
         className={`nav__item ${
-          pathname == item.link && 'bg-defaultBlue-300 text-white'
+          pathname.includes(item.link) && 'bg-defaultBlue-300 text-white'
         }`}
       >
         {<item.icon className="w-5 h-5" />}

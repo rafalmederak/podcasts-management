@@ -65,7 +65,7 @@ const dashboardSupportLinks = [
 const DashboardNavigation = () => {
   const pathname = usePathname();
   return (
-    <div className="flex flex-col justify-between py-10 px-6 items-center w-52 min-h-screen border-gray-100 border-r-2">
+    <div className="flex flex-col justify-between py-10 px-6 items-center w-52 h-screen sticky left-0 top-0 border-gray-100 border-r-2">
       <div className="flex flex-col items-center">
         <Image
           src={Logo}
