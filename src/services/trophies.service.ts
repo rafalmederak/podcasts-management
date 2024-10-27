@@ -50,7 +50,7 @@ export async function getPodcastRanking(podcastId: string) {
       return {
         userId,
         displayName: userData.displayName,
-        photoUrl: userData.photoUrl,
+        photoURL: userData.photoURL,
         trophiesCount: userTrophiesCount[userId],
       };
     });

@@ -108,9 +108,9 @@ const PodcastProfilePage = () => {
                     <div className="flex items-center gap-x-2">
                       <p className="min-w-4 text-left">{index + 1}</p>
                       <div className="w-8 h-8 relative">
-                        {item.photoUrl ? (
+                        {item.photoURL ? (
                           <Image
-                            src={item.photoUrl}
+                            src={item.photoURL}
                             alt="Demo photo"
                             fill={true}
                             className="rounded-md shadow-md object-cover"

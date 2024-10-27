@@ -7,15 +7,21 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-import { auth } from '@/firebase/firebaseConfig';
+import { auth, db } from '@/firebase/firebaseConfig';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+
+interface ExtendedUser extends User {
+  displayName: string;
+  photoURL: string | null;
+}
 
 interface AuthContextType {
   userLoggedIn: boolean;
   isEmailUser: boolean;
   //   isGoogleUser: boolean;
   currentUser: User | null;
-  setCurrentUser: React.Dispatch<React.SetStateAction<User | null>>;
+  setCurrentUser: React.Dispatch<React.SetStateAction<ExtendedUser | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -33,7 +39,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<ExtendedUser | null>(null);
   const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [isEmailUser, setIsEmailUser] = useState(false);
   //   const [isGoogleUser, setIsGoogleUser] = useState(false);
@@ -44,10 +50,8 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     return () => unsubscribe();
   }, []);
 
-  const initializeUser = (user: User | null) => {
+  const initializeUser = async (user: User | null) => {
     if (user) {
-      setCurrentUser(user);
-
       const isEmail = user.providerData.some(
         (provider) => provider.providerId === 'password'
       );
@@ -59,6 +63,17 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       // setIsGoogleUser(isGoogle);
 
       setUserLoggedIn(true);
+
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const firestoreUserData = userDoc.exists() ? userDoc.data() : {};
+      const extendedUser: ExtendedUser = {
+        ...user,
+        displayName: firestoreUserData.displayName || user.displayName || '',
+        ...firestoreUserData,
+      };
+
+      setCurrentUser(extendedUser);
     } else {
       setCurrentUser(null);
       setUserLoggedIn(false);
