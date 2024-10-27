@@ -75,13 +75,13 @@ const DashboardNavigation = () => {
         />
         <div className="flex flex-col gap-5 mt-16">
           {dashboardNavLinks.map((item) => (
-            <NavLink item={item} pathname={pathname} />
+            <NavLink item={item} pathname={pathname} key={item.link} />
           ))}
         </div>
       </div>
       <div className="flex flex-col gap-5 mt-16">
         {dashboardSupportLinks.map((item) => (
-          <NavLink item={item} pathname={pathname} />
+          <NavLink item={item} pathname={pathname} key={item.link} />
         ))}
       </div>
     </div>
