@@ -4,5 +4,6 @@ export type Episode = {
   title: string;
   date: string;
   description: string;
+  longDescription: string;
   photo: string;
 };

@@ -1,4 +1,5 @@
 import { db } from '@/firebase/firebaseConfig';
+import { Trophy, UserTrophy } from '@/types/trophy';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export async function getPodcastRanking(podcastId: string) {
@@ -61,4 +62,42 @@ export async function getPodcastRanking(podcastId: string) {
   } catch (error) {
     console.error(error);
   }
+}
+
+export async function getEpisodeTrophies(episodeId: string) {
+  const q = query(
+    collection(db, 'trophies'),
+    where('episodeId', '==', episodeId)
+  );
+
+  const querySnapshot = await getDocs(q);
+
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Trophy[];
+}
+
+export async function getEpisodeUserTrophies(
+  episodeId: string,
+  userId?: string
+) {
+  const trophiesQuery = query(
+    collection(db, 'trophies'),
+    where('episodeId', '==', episodeId)
+  );
+  const trophiesSnapshot = await getDocs(trophiesQuery);
+  const trophyIds = trophiesSnapshot.docs.map((doc) => doc.id);
+
+  const userTrophiesQuery = query(
+    collection(db, 'userTrophies'),
+    where('userId', '==', userId),
+    where('trophyId', 'in', trophyIds)
+  );
+  const querySnapshot = await getDocs(userTrophiesQuery);
+
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as UserTrophy[];
 }

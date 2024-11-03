@@ -8,6 +8,7 @@ import { StarIcon, TrophyIcon } from '@heroicons/react/24/solid';
 import { getPodcastEpisodes } from '@/services/episodes.service';
 import { getPodcastRanking } from '@/services/trophies.service';
 import { useAuth } from '@/contexts/authContext';
+import Link from 'next/link';
 
 const PodcastProfilePage = () => {
   const { currentUser } = useAuth();
@@ -62,7 +63,8 @@ const PodcastProfilePage = () => {
             <div className="flex flex-col gap-2  max-h-[calc(100vh-290px)] 2xl:h-[calc(100vh-290px)] overflow-y-auto px-4 pt-2">
               <div className="flex flex-col w-full gap-4 my-1">
                 {episodesData?.map((item) => (
-                  <div
+                  <Link
+                    href={`/dashboard/podcasts/${params.podcastId}/${item.id}`}
                     key={item.id}
                     className="flex w-full border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all"
                   >
@@ -82,7 +84,7 @@ const PodcastProfilePage = () => {
                       <h4 className="text-defaultBlue-400">{item.date}</h4>
                       <p className="line-clamp-4">{item.description}</p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
