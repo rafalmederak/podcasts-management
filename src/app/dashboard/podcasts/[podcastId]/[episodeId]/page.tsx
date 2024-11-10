@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -11,6 +11,7 @@ import {
   ArrowLeftCircleIcon,
   CheckCircleIcon,
   ClockIcon,
+  PauseCircleIcon,
   PlayCircleIcon,
   TrophyIcon,
 } from '@heroicons/react/24/solid';
@@ -39,6 +40,12 @@ const EpisodePage = () => {
   const { currentUser } = useAuth();
   const params = useParams<{ podcastId: string; episodeId: string }>();
 
+  //audio
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+
   const { data: trophiesData } = useSWR(`episodes_${params.episodeId}`, () =>
     getEpisodeTrophies(params.episodeId)
   );
@@ -52,9 +59,28 @@ const EpisodePage = () => {
     suspense: true,
   });
 
-  const { data: episodeData } = useSWR(`${params.episodeId}`, getEpisode, {
-    suspense: true,
-  });
+  const {
+    data: episodeData,
+    error: episodeError,
+    isLoading: episodeIsLoading,
+  } = useSWR(`${params.episodeId}`, () => getEpisode(params.episodeId));
+
+  useEffect(() => {
+    if (episodeData && audioRef.current) {
+      const audio = audioRef.current;
+      audio.ontimeupdate = () => setAudioCurrentTime(audio.currentTime);
+      audio.onloadedmetadata = () => setAudioDuration(audio.duration);
+      audio.onended = () => handleAudioEnd();
+    }
+  }, [episodeData]);
+
+  if (episodeError) {
+    return <div>Error loading episode.</div>;
+  }
+
+  if (episodeIsLoading || !episodeData) {
+    return <div>Loading episode...</div>;
+  }
 
   const formattedEpisodeDescription = episodeData.longDescription
     ? episodeData.longDescription.replace(/\\n/g, '\n')
@@ -75,7 +101,7 @@ const EpisodePage = () => {
       (userTrophy) => userTrophy.trophyId
     );
 
-    return trophiesData.slice().sort((a, b) => {
+    return trophiesData.sort((a, b) => {
       const isATrophyUser = userTrophyIds.includes(a.id);
       const isBTrophyUser = userTrophyIds.includes(b.id);
 
@@ -84,6 +110,41 @@ const EpisodePage = () => {
 
       return b.level - a.level;
     });
+  };
+
+  //functions
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isAudioPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsAudioPlaying(!isAudioPlaying);
+    }
+  };
+
+  const handleProgressClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (audioRef.current && audioDuration) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const clickPosition = event.clientX - rect.left;
+      const clickPercentage = clickPosition / rect.width;
+      const newTime = clickPercentage * audioDuration;
+      audioRef.current.currentTime = newTime;
+      setAudioCurrentTime(newTime);
+    }
+  };
+
+  const handleAudioEnd = () => {
+    setIsAudioPlaying(false);
+    setAudioCurrentTime(0);
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   return (
@@ -116,7 +177,7 @@ const EpisodePage = () => {
                   </p>
                   <div className="flex items-center">
                     <ClockIcon className="w-4 h-4" />
-                    <p className="ml-1">1h 22min</p>
+                    <p className="ml-1">{formatTime(audioDuration)}</p>
                   </div>
                   <div className="flex items-center">
                     <TrophyIcon className="w-4 h-4" />
@@ -130,37 +191,88 @@ const EpisodePage = () => {
               </div>
             </div>
             <p>{episodeData.description}</p>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                <PlayCircleIcon className="w-8 h-8 text-defaultBlue-300 cursor-pointer" />
-                <span className="w-96 h-6 ml-1 rounded-lg bg-gray-200"></span>
-              </div>
-              <div className="w-6 h-6 relative cursor-pointer">
-                <Image
-                  src={SpotifyLogo}
-                  alt="Spotify"
-                  fill={true}
-                  className="object-cover rounded-md p-1 bg-black"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            <div className="flex gap-2">
+              <div className="flex items-start ">
+                <button onClick={togglePlay}>
+                  {isAudioPlaying ? (
+                    <PauseCircleIcon className="w-8 h-8 text-defaultBlue-300 cursor-pointer" />
+                  ) : (
+                    <PlayCircleIcon className="w-8 h-8 text-defaultBlue-300 cursor-pointer" />
+                  )}
+                </button>
+                <audio
+                  ref={audioRef}
+                  src={episodeData.audioURL}
+                  preload="auto"
                 />
+                <div className="flex flex-col mt-[3px] ml-1">
+                  <div
+                    className="w-96 h-6 rounded-lg bg-gray-200 relative cursor-pointer border-gray-200 border-2"
+                    onClick={handleProgressClick}
+                  >
+                    <div
+                      className={`h-full bg-white rounded-md w-[${
+                        (audioCurrentTime / audioDuration) * 100
+                      }%]`}
+                      style={{
+                        width: `${(audioCurrentTime / audioDuration) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <span className="text-sm">
+                      {formatTime(audioCurrentTime)}
+                    </span>
+                    <span className="text-sm">{formatTime(audioDuration)}</span>
+                  </div>
+                </div>
               </div>
-              <div className="w-6 h-6 relative cursor-pointer">
-                <Image
-                  src={ApplePodcastsLogo}
-                  alt="Apple Podcasts"
-                  fill={true}
-                  className="object-cover rounded-md"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <div className=" h-6 w-24 relative cursor-pointer">
-                <Image
-                  src={YTMusicLogo}
-                  alt="YouTube Music"
-                  fill={true}
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
+              <div className="flex mt-[3px] gap-2">
+                {episodeData.spotifyURL && (
+                  <a
+                    href={episodeData.spotifyURL}
+                    target="_blank"
+                    className="w-6 h-6 relative cursor-pointer"
+                  >
+                    <Image
+                      src={SpotifyLogo}
+                      alt="Spotify"
+                      fill={true}
+                      className="object-cover rounded-md p-1 bg-black"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </a>
+                )}
+                {episodeData.applePodcastsURL && (
+                  <a
+                    href={episodeData.applePodcastsURL}
+                    target="_blank"
+                    className="w-6 h-6 relative cursor-pointer"
+                  >
+                    <Image
+                      src={ApplePodcastsLogo}
+                      alt="Apple Podcasts"
+                      fill={true}
+                      className="object-cover rounded-md"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </a>
+                )}
+                {episodeData.ytMusicURL && (
+                  <a
+                    href={episodeData.ytMusicURL}
+                    target="_blank"
+                    className=" h-6 w-24 relative cursor-pointer"
+                  >
+                    <Image
+                      src={YTMusicLogo}
+                      alt="YouTube Music"
+                      fill={true}
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </a>
+                )}
               </div>
             </div>
             <div className="whitespace-pre-line leading-normal">

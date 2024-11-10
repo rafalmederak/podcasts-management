@@ -6,4 +6,8 @@ export type Episode = {
   description: string;
   longDescription: string;
   photo: string;
+  audioURL: string;
+  spotifyURL?: string;
+  applePodcastsURL?: string;
+  ytMusicURL?: string;
 };
