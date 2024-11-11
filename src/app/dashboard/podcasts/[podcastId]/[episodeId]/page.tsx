@@ -23,7 +23,12 @@ import ApplePodcastsLogo from '@/assets/logos/Apple_Podcasts_Icon_RGB.svg';
 import SpotifyLogo from '@/assets/logos/Spotify_Primary_Logo_RGB_Green.png';
 
 //services
-import { getEpisode } from '@/services/episodes.service';
+import {
+  addLikeToEpisode,
+  getEpisode,
+  getEpisodeUserLike,
+  removeLikeFromEpisode,
+} from '@/services/episodes.service';
 import { getPodcast } from '@/services/podcasts.service';
 import {
   getEpisodeTrophies,
@@ -38,7 +43,10 @@ import { Trophy, UserTrophy } from '@/types/trophy';
 
 const EpisodePage = () => {
   const { currentUser } = useAuth();
+  if (!currentUser) return null;
   const params = useParams<{ podcastId: string; episodeId: string }>();
+
+  const [isEpisodeLiked, setIsEpisodeLiked] = useState(false);
 
   //audio
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -59,6 +67,12 @@ const EpisodePage = () => {
     suspense: true,
   });
 
+  const { data: episodeLikes } = useSWR(
+    `episodeLikes_${params.episodeId}_${currentUser.uid}`,
+    () => getEpisodeUserLike(params.episodeId, currentUser.uid),
+    { revalidateOnFocus: true }
+  );
+
   const {
     data: episodeData,
     error: episodeError,
@@ -73,6 +87,10 @@ const EpisodePage = () => {
       audio.onended = () => handleAudioEnd();
     }
   }, [episodeData]);
+
+  useEffect(() => {
+    episodeLikes ? setIsEpisodeLiked(true) : setIsEpisodeLiked(false);
+  }, [episodeLikes]);
 
   if (episodeError) {
     return <div>Error loading episode.</div>;
@@ -113,6 +131,24 @@ const EpisodePage = () => {
   };
 
   //functions
+
+  const handleLike = async () => {
+    try {
+      await addLikeToEpisode(episodeData.id, currentUser.uid);
+      setIsEpisodeLiked(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleUnlike = async () => {
+    try {
+      await removeLikeFromEpisode(episodeData.id, currentUser.uid);
+      setIsEpisodeLiked(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -184,10 +220,19 @@ const EpisodePage = () => {
                     <p className="ml-1">{trophiesData?.length}</p>
                   </div>
                 </div>
-                <div className="flex items-center cursor-pointer rounded-md hover:bg-gray-100 transition-all ml-5 pl-1 py-1 pr-2">
-                  <PlusCircleIcon className="w-5 h-5" />
-                  <p className="ml-1">Add to liked</p>
-                </div>
+                <button
+                  onClick={isEpisodeLiked ? handleUnlike : handleLike}
+                  className="flex items-center cursor-pointer rounded-md hover:bg-gray-100 transition-all ml-5 pl-1 py-1 pr-2"
+                >
+                  {isEpisodeLiked ? (
+                    <CheckCircleIcon className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <PlusCircleIcon className="w-5 h-5" />
+                  )}
+                  <p className="ml-1 ">
+                    {isEpisodeLiked ? 'Liked' : 'Add to liked'}
+                  </p>
+                </button>
               </div>
             </div>
             <p>{episodeData.description}</p>

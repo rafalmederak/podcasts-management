@@ -1,11 +1,15 @@
 import { db } from '@/firebase/firebaseConfig';
 import { Episode } from '@/types/episode';
+import { User } from 'firebase/auth';
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   query,
+  setDoc,
+  Timestamp,
   where,
 } from 'firebase/firestore';
 
@@ -32,4 +36,38 @@ export async function getEpisode(episodeId: Episode['id']) {
   } else {
     throw new Error(`Episode with id ${episodeId} not found`);
   }
+}
+
+export async function addLikeToEpisode(
+  episodeId: Episode['id'],
+  userId: User['uid']
+) {
+  const likeId = `${userId}_${episodeId}`;
+  const likeRef = doc(db, 'episodeLikes', likeId);
+
+  await setDoc(likeRef, {
+    episodeId,
+    userId,
+    createdAt: Timestamp.now(),
+  });
+}
+
+export async function removeLikeFromEpisode(
+  episodeId: Episode['id'],
+  userId: User['uid']
+) {
+  const likeId = `${userId}_${episodeId}`;
+  const likeRef = doc(db, 'episodeLikes', likeId);
+
+  await deleteDoc(likeRef);
+}
+
+export async function getEpisodeUserLike(
+  episodeId: Episode['id'],
+  userId: User['uid']
+) {
+  const likeDocRef = doc(db, 'episodeLikes', `${userId}_${episodeId}`);
+  const likeDoc = await getDoc(likeDocRef);
+
+  return likeDoc.exists();
 }
