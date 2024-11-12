@@ -1,6 +1,16 @@
 import { db } from '@/firebase/firebaseConfig';
 import { Trophy, UserTrophy } from '@/types/trophy';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  Timestamp,
+  where,
+} from 'firebase/firestore';
+import { mutate } from 'swr';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getPodcastRanking(podcastId: string) {
   try {
@@ -100,4 +110,39 @@ export async function getEpisodeUserTrophies(
     id: doc.id,
     ...doc.data(),
   })) as UserTrophy[];
+}
+
+export async function addEpisodeUserTrophie(
+  trophyId: string,
+  userId: string,
+  answer: number
+) {
+  const id = uuidv4();
+  const likeRef = doc(db, 'userTrophies', id);
+
+  await setDoc(likeRef, {
+    trophyId,
+    userId,
+    answer,
+    createdAt: Timestamp.now(),
+  });
+
+  mutate(`userTrophies_${userId}`);
+}
+
+export async function getUserTrophy(trophyId: string, userId: string) {
+  const userTrophiesQuery = query(
+    collection(db, 'userTrophies'),
+    where('userId', '==', userId),
+    where('trophyId', '==', trophyId)
+  );
+
+  const querySnapshot = await getDocs(userTrophiesQuery);
+
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as UserTrophy;
+  } else {
+    return null;
+  }
 }

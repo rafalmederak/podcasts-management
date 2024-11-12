@@ -41,12 +41,22 @@ import { useAuth } from '@/contexts/authContext';
 //types
 import { Trophy, UserTrophy } from '@/types/trophy';
 
+//components
+import TrophyDetail from '@/components/TrophyDetail';
+
 const EpisodePage = () => {
   const { currentUser } = useAuth();
   if (!currentUser) return null;
   const params = useParams<{ podcastId: string; episodeId: string }>();
 
   const [isEpisodeLiked, setIsEpisodeLiked] = useState(false);
+  const [isTrophyDetailOpen, setIsTrophyDetailOpen] = useState(false);
+  const [selectedTrophy, setSelectedTrophy] = useState<Trophy | null>(null);
+
+  const handleTrophyClick = (trophy: Trophy) => {
+    setSelectedTrophy(trophy);
+    setIsTrophyDetailOpen(true);
+  };
 
   //audio
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -105,7 +115,8 @@ const EpisodePage = () => {
     : null;
 
   const isUserTrophy = (itemId: Trophy['id']) => {
-    return userTrophiesData?.some(
+    if (!userTrophiesData) return null;
+    return userTrophiesData.some(
       (trophy) =>
         trophy.userId === currentUser?.uid && trophy.trophyId === itemId
     );
@@ -185,6 +196,9 @@ const EpisodePage = () => {
 
   return (
     <div className="flex w-full flex-col items-start gap-6">
+      {isTrophyDetailOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-10 backdrop-blur-sm z-10"></div>
+      )}
       <Link
         href={`/dashboard/podcasts/${params.podcastId}`}
         className="inline-flex items-center gap-2 mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
@@ -252,11 +266,11 @@ const EpisodePage = () => {
                 />
                 <div className="flex flex-col mt-[3px] ml-1">
                   <div
-                    className="w-96 h-6 rounded-lg bg-gray-200 relative cursor-pointer border-gray-200 border-2"
+                    className="group w-96 h-6 rounded-lg bg-gray-200 relative border-gray-200 border-2"
                     onClick={handleProgressClick}
                   >
                     <div
-                      className={`h-full bg-white rounded-md w-[${
+                      className={`h-full bg-white group-hover:bg-blue-500 transition-all rounded-md w-[${
                         (audioCurrentTime / audioDuration) * 100
                       }%]`}
                       style={{
@@ -328,11 +342,15 @@ const EpisodePage = () => {
         <div className="flex w-full 2xl:w-2/5 flex-col px-4 2xl:px-0">
           <h2 className="text-lg font-bold 2xl:px-4">Episode Tasks</h2>
           <div className="flex flex-col gap-2  max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] overflow-y-auto 2xl:px-4 pt-2">
-            <div className="flex flex-col w-full gap-4 my-1">
+            <div className="flex flex-col w-full gap-4 my-1 relative">
+              {trophiesData?.length == 0 && (
+                <p>Currently there are no trophies for this episode.</p>
+              )}
               {trophiesData &&
                 userTrophiesData &&
                 sortTrophies(trophiesData, userTrophiesData).map((item) => (
                   <div
+                    onClick={() => handleTrophyClick(item)}
                     key={item.id}
                     className={`flex w-full relative border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all ${
                       isUserTrophy(item.id)
@@ -370,6 +388,14 @@ const EpisodePage = () => {
                     </div>
                   </div>
                 ))}
+              {isTrophyDetailOpen && selectedTrophy && (
+                <TrophyDetail
+                  currentUser={currentUser}
+                  trophy={selectedTrophy}
+                  setIsTrophyDetailOpen={setIsTrophyDetailOpen}
+                  isUserTrophy={isUserTrophy}
+                />
+              )}
             </div>
           </div>
         </div>
