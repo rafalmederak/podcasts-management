@@ -1,6 +1,15 @@
 import { db } from '@/firebase/firebaseConfig';
 import { Podcast } from '@/types/podcast';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { User } from 'firebase/auth';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  Timestamp,
+} from 'firebase/firestore';
 
 export async function getPodcasts() {
   const querySnapshot = await getDocs(collection(db, 'podcasts'));
@@ -19,4 +28,42 @@ export async function getPodcast(podcastId: Podcast['id']) {
   } else {
     throw new Error(`Podcast with id ${podcastId} not found`);
   }
+}
+
+export async function subscribePodcast(
+  podcastId: Podcast['id'],
+  userId: User['uid']
+) {
+  const subscribeId = `${userId}_${podcastId}`;
+  const subscribeRef = doc(db, 'podcastSubscribtions', subscribeId);
+
+  await setDoc(subscribeRef, {
+    podcastId,
+    userId,
+    createdAt: Timestamp.now(),
+  });
+}
+
+export async function unsubscribePodcast(
+  podcastId: Podcast['id'],
+  userId: User['uid']
+) {
+  const subscribeId = `${userId}_${podcastId}`;
+  const subscribeRef = doc(db, 'podcastSubscribtions', subscribeId);
+
+  await deleteDoc(subscribeRef);
+}
+
+export async function getPodcastUserSubscription(
+  podcastId: Podcast['id'],
+  userId: User['uid']
+) {
+  const subscribeDocRef = doc(
+    db,
+    'podcastSubscribtions',
+    `${userId}_${podcastId}`
+  );
+  const subscribeDoc = await getDoc(subscribeDocRef);
+
+  return subscribeDoc.exists();
 }

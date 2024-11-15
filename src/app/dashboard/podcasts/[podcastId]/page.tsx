@@ -1,28 +1,52 @@
 'use client';
-import { getPodcast } from '@/services/podcasts.service';
+import {
+  getPodcast,
+  getPodcastUserSubscription,
+  subscribePodcast,
+  unsubscribePodcast,
+} from '@/services/podcasts.service';
 import { useParams } from 'next/navigation';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import Image from 'next/image';
-import { StarIcon, TrophyIcon } from '@heroicons/react/24/solid';
+import {
+  CheckCircleIcon,
+  StarIcon,
+  TrophyIcon,
+} from '@heroicons/react/24/solid';
 import { getPodcastEpisodes } from '@/services/episodes.service';
 import { getPodcastRanking } from '@/services/trophies.service';
 import { useAuth } from '@/contexts/authContext';
 import Link from 'next/link';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 const PodcastProfilePage = () => {
   const { currentUser } = useAuth();
+  if (!currentUser) return null;
 
   const params = useParams<{ podcastId: string }>();
+  const [isPodcastSubscribed, setIsPodcastSubscribed] = useState(false);
 
-  const { data: rankingData } = useSWR(
-    params.podcastId ? `ranking_${params.podcastId}` : null,
-    () => getPodcastRanking(params.podcastId)
+  const { data: podcastUserSubscription } = useSWR(
+    `podcastUserSubscription_${params.podcastId}_${currentUser.uid}`,
+    () => getPodcastUserSubscription(params.podcastId, currentUser.uid),
+    { revalidateOnFocus: true }
   );
+
+  useEffect(() => {
+    podcastUserSubscription
+      ? setIsPodcastSubscribed(true)
+      : setIsPodcastSubscribed(false);
+  }, [podcastUserSubscription]);
 
   const { data: episodesData } = useSWR(
     params.podcastId ? `episodes_${params.podcastId}` : null,
     () => getPodcastEpisodes(params.podcastId)
+  );
+
+  const { data: rankingData } = useSWR(
+    params.podcastId ? `ranking_${params.podcastId}` : null,
+    () => getPodcastRanking(params.podcastId)
   );
 
   const { data: podcastData, mutate } = useSWR(
@@ -33,6 +57,24 @@ const PodcastProfilePage = () => {
     }
   );
 
+  const handleSubscribe = async () => {
+    try {
+      await subscribePodcast(podcastData.id, currentUser.uid);
+      setIsPodcastSubscribed(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleUnsubscribe = async () => {
+    try {
+      await unsubscribePodcast(podcastData.id, currentUser.uid);
+      setIsPodcastSubscribed(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="flex flex-col w-full gap-10">
       <div className="flex flex-col gap-3 px-4">
@@ -42,7 +84,7 @@ const PodcastProfilePage = () => {
       <div className="flex gap-8 2xl:gap-6 flex-wrap">
         <div className="flex flex-col xl:flex-row 2xl:w-2/3 w-full gap-8 2xl:gap-6 ">
           <div className="flex flex-col flex-1 w-full xl:1/2 max-h-[calc(100vh-254px)] 2xl:h-[calc(100vh-254px)] overflow-y-auto 2xl:pb-4 px-4">
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col items-start gap-3">
               <div className="w-full h-80 relative">
                 <Image
                   src={podcastData.photo}
@@ -52,6 +94,22 @@ const PodcastProfilePage = () => {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
+              <button
+                onClick={
+                  isPodcastSubscribed ? handleUnsubscribe : handleSubscribe
+                }
+                className="flex items-center cursor-pointer rounded-md hover:bg-gray-100 transition-all pl-1 py-1 pr-2"
+              >
+                {isPodcastSubscribed ? (
+                  <CheckCircleIcon className="w-5 h-5 text-defaultBlue-300" />
+                ) : (
+                  <PlusCircleIcon className="w-5 h-5" />
+                )}
+                <p className="ml-1 ">
+                  {isPodcastSubscribed ? 'Subscribed' : 'Subscribe'}
+                </p>
+              </button>
+
               <div className="flex flex-col gap-2">
                 <h2 className="text-lg font-medium">About</h2>
                 <p>{podcastData.description}</p>
