@@ -11,8 +11,9 @@ import { Podcast } from '@/types/podcast';
 import { getPodcasts } from '@/services/podcasts.service';
 
 //icons
-import { MagnifyingGlassIcon, TrophyIcon } from '@heroicons/react/24/solid';
+import { TrophyIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
+import SearchBar from '@/components/SearchBar';
 
 const PodcastsPage = () => {
   const { data } = useSWR('podcasts', getPodcasts);
@@ -31,16 +32,7 @@ const PodcastsPage = () => {
   return (
     <div className="flex flex-col w-full gap-10">
       <h2 className="page__title">Podcasts</h2>
-      <div className="rounded-md w-full flex items-center max-w-96 md:w-[18rem] gap-x-1 px-3 py-2 text-sm shadow-sm ring-1 ring-inset ring-gray-200 focus:outline-none">
-        <MagnifyingGlassIcon className="w-4 h-4" />
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="flex flex-wrap gap-12 w-full">
         {filteredData.length === 0 ? (
           <div className="w-full h-full text-lg flex">No podcasts found.</div>

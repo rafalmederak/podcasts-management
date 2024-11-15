@@ -12,6 +12,7 @@ import {
   Timestamp,
   where,
 } from 'firebase/firestore';
+import { getPodcast } from './podcasts.service';
 
 export async function getPodcastEpisodes(podcastId: string) {
   const q = query(
@@ -70,4 +71,39 @@ export async function getEpisodeUserLike(
   const likeDoc = await getDoc(likeDocRef);
 
   return likeDoc.exists();
+}
+
+export async function getUserLikedEpisodes(userId: User['uid']) {
+  const likesQuery = query(
+    collection(db, 'episodeLikes'),
+    where('userId', '==', userId)
+  );
+  const likesSnapshot = await getDocs(likesQuery);
+  const episodeIds = likesSnapshot.docs.map((doc) => doc.data().episodeId);
+
+  if (episodeIds.length === 0) {
+    return [];
+  }
+
+  const episodesQuery = query(
+    collection(db, 'episodes'),
+    where('__name__', 'in', episodeIds)
+  );
+  const episodesSnapshot = await getDocs(episodesQuery);
+
+  const episodes = await Promise.all(
+    episodesSnapshot.docs.map(async (doc) => {
+      const episodeData = doc.data() as Episode;
+      const podcastId = episodeData.podcastId;
+      const podcast = await getPodcast(podcastId);
+
+      return {
+        ...episodeData,
+        id: doc.id,
+        podcastTitle: podcast.title,
+      };
+    })
+  );
+
+  return episodes;
 }

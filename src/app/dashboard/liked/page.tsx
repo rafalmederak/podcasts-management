@@ -1,0 +1,71 @@
+'use client';
+
+import SearchBar from '@/components/SearchBar';
+import { getUserLikedEpisodes } from '@/services/episodes.service';
+import Link from 'next/link';
+import React, { useMemo, useState } from 'react';
+import useSWR from 'swr';
+import Image from 'next/image';
+import { useAuth } from '@/contexts/authContext';
+
+const LikedPage = () => {
+  const { currentUser } = useAuth();
+  if (!currentUser) return null;
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const { data: episodesData, isLoading: episodesIsLoading } = useSWR(
+    'user_liked_episodes',
+    () => getUserLikedEpisodes(currentUser.uid)
+  );
+
+  const filteredData = useMemo(() => {
+    if (!episodesData) return [];
+    return episodesData.filter(
+      (item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.podcastTitle.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [episodesData, searchQuery]);
+
+  if (episodesIsLoading || !episodesData) {
+    return <div>Loading episodes...</div>;
+  }
+
+  return (
+    <div className="flex flex-col w-full gap-10 px-4">
+      <h2 className="page__title">Liked episodes</h2>
+      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <div className="flex flex-wrap gap-12 w-full">
+        {filteredData.length === 0 ? (
+          <div className="w-full h-full text-lg flex">No episodes found.</div>
+        ) : (
+          filteredData.map((item) => (
+            <Link
+              key={item.id}
+              href={`/dashboard/podcasts/${item.podcastId}/${item.id}`}
+              className="flex flex-col items-start justify-start w-72 hover:scale-105 cursor-pointer transition-all"
+            >
+              <div className="w-72 h-72 relative">
+                <Image
+                  src={item.photo}
+                  alt="Episode"
+                  fill={true}
+                  className="rounded-lg shadow-md object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              </div>
+              <div className="flex w-full justify-between pt-2.5">
+                <div>
+                  <h3 className="font-medium text-md">{item.title}</h3>
+                  <h2 className="text-sm">{item.podcastTitle}</h2>
+                </div>
+              </div>
+            </Link>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default LikedPage;
