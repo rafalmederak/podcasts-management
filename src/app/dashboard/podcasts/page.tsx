@@ -30,7 +30,7 @@ const PodcastsPage = () => {
   }, [data, searchQuery]);
 
   return (
-    <div className="flex flex-col w-full gap-10">
+    <div className="flex flex-col w-full gap-10  px-4">
       <h2 className="page__title">Podcasts</h2>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="flex flex-wrap gap-12 w-full">

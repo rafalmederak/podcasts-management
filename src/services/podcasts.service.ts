@@ -11,6 +11,8 @@ import {
   setDoc,
   Timestamp,
   where,
+  limit,
+  getCountFromServer,
 } from 'firebase/firestore';
 
 export async function getPodcasts() {
@@ -70,7 +72,10 @@ export async function getPodcastUserSubscription(
   return subscribeDoc.exists();
 }
 
-export async function getUserSubscribedPodcasts(userId: User['uid']) {
+export async function getUserSubscribedPodcasts(
+  userId: User['uid'],
+  limitNumber?: number
+) {
   const subscriptionsQuery = query(
     collection(db, 'podcastSubscriptions'),
     where('userId', '==', userId)
@@ -84,14 +89,29 @@ export async function getUserSubscribedPodcasts(userId: User['uid']) {
     return [];
   }
 
-  const podcastsQuery = query(
-    collection(db, 'podcasts'),
-    where('__name__', 'in', podcastIds)
-  );
+  const podcastsQuery = limitNumber
+    ? query(
+        collection(db, 'podcasts'),
+        where('__name__', 'in', podcastIds),
+        limit(limitNumber)
+      )
+    : query(collection(db, 'podcasts'), where('__name__', 'in', podcastIds));
   const podcastsSnapshot = await getDocs(podcastsQuery);
 
   return podcastsSnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   })) as Podcast[];
+}
+
+export async function getUserSubscriptionsCount(
+  userId: User['uid']
+): Promise<number> {
+  const subscriptionsQuery = query(
+    collection(db, 'podcastSubscriptions'),
+    where('userId', '==', userId)
+  );
+
+  const countSnapshot = await getCountFromServer(subscriptionsQuery);
+  return countSnapshot.data().count;
 }

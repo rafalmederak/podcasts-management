@@ -5,8 +5,10 @@ import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
+  limit,
   query,
   setDoc,
   Timestamp,
@@ -73,7 +75,10 @@ export async function getEpisodeUserLike(
   return likeDoc.exists();
 }
 
-export async function getUserLikedEpisodes(userId: User['uid']) {
+export async function getUserLikedEpisodes(
+  userId: User['uid'],
+  limitNumber?: number
+) {
   const likesQuery = query(
     collection(db, 'episodeLikes'),
     where('userId', '==', userId)
@@ -85,10 +90,13 @@ export async function getUserLikedEpisodes(userId: User['uid']) {
     return [];
   }
 
-  const episodesQuery = query(
-    collection(db, 'episodes'),
-    where('__name__', 'in', episodeIds)
-  );
+  const episodesQuery = limitNumber
+    ? query(
+        collection(db, 'episodes'),
+        where('__name__', 'in', episodeIds),
+        limit(limitNumber)
+      )
+    : query(collection(db, 'episodes'), where('__name__', 'in', episodeIds));
   const episodesSnapshot = await getDocs(episodesQuery);
 
   const episodes = await Promise.all(
@@ -106,4 +114,14 @@ export async function getUserLikedEpisodes(userId: User['uid']) {
   );
 
   return episodes;
+}
+
+export async function getUserLikedCount(userId: User['uid']): Promise<number> {
+  const likedQuery = query(
+    collection(db, 'episodeLikes'),
+    where('userId', '==', userId)
+  );
+
+  const countSnapshot = await getCountFromServer(likedQuery);
+  return countSnapshot.data().count;
 }
