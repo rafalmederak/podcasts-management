@@ -7,8 +7,10 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   setDoc,
   Timestamp,
+  where,
 } from 'firebase/firestore';
 
 export async function getPodcasts() {
@@ -35,7 +37,7 @@ export async function subscribePodcast(
   userId: User['uid']
 ) {
   const subscribeId = `${userId}_${podcastId}`;
-  const subscribeRef = doc(db, 'podcastSubscribtions', subscribeId);
+  const subscribeRef = doc(db, 'podcastSubscriptions', subscribeId);
 
   await setDoc(subscribeRef, {
     podcastId,
@@ -49,7 +51,7 @@ export async function unsubscribePodcast(
   userId: User['uid']
 ) {
   const subscribeId = `${userId}_${podcastId}`;
-  const subscribeRef = doc(db, 'podcastSubscribtions', subscribeId);
+  const subscribeRef = doc(db, 'podcastSubscriptions', subscribeId);
 
   await deleteDoc(subscribeRef);
 }
@@ -60,10 +62,36 @@ export async function getPodcastUserSubscription(
 ) {
   const subscribeDocRef = doc(
     db,
-    'podcastSubscribtions',
+    'podcastSubscriptions',
     `${userId}_${podcastId}`
   );
   const subscribeDoc = await getDoc(subscribeDocRef);
 
   return subscribeDoc.exists();
+}
+
+export async function getUserSubscribedPodcasts(userId: User['uid']) {
+  const subscriptionsQuery = query(
+    collection(db, 'podcastSubscriptions'),
+    where('userId', '==', userId)
+  );
+  const subscriptionsSnapshot = await getDocs(subscriptionsQuery);
+  const podcastIds = subscriptionsSnapshot.docs.map(
+    (doc) => doc.data().podcastId
+  );
+
+  if (podcastIds.length === 0) {
+    return [];
+  }
+
+  const podcastsQuery = query(
+    collection(db, 'podcasts'),
+    where('__name__', 'in', podcastIds)
+  );
+  const podcastsSnapshot = await getDocs(podcastsQuery);
+
+  return podcastsSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Podcast[];
 }
