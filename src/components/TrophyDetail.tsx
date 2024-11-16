@@ -125,7 +125,7 @@ const TrophyDetail = ({
         <div key={trophy.id} className="flex flex-col gap-6">
           <div>{trophy.task.question}</div>
           {trophy.task.type === 'radio' && (
-            <div className="flex gap-5">
+            <div className="flex gap-5 flex-wrap">
               {trophy.task.radioOptions?.map((option, index) => (
                 <label
                   key={option}
@@ -133,7 +133,7 @@ const TrophyDetail = ({
                     selectedAnswer === option || userTrophy?.answer == option
                       ? 'bg-blue-400'
                       : 'bg-blue-200'
-                  } min-w-8 w-full h-8 flex items-center justify-center rounded-sm transition-all ${
+                  } min-w-8  p-4 h-8 flex items-center justify-center rounded-sm transition-all ${
                     !userTrophy?.answer
                       ? 'hover:bg-blue-400 cursor-pointer '
                       : ''

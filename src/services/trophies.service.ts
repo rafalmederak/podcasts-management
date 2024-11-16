@@ -1,5 +1,6 @@
 import { db } from '@/firebase/firebaseConfig';
 import { Trophy, UserTrophy } from '@/types/trophy';
+import { User } from 'firebase/auth';
 import {
   collection,
   doc,
@@ -11,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { mutate } from 'swr';
 import { v4 as uuidv4 } from 'uuid';
+import { getEpisode } from './episodes.service';
 
 export async function getPodcastRanking(podcastId: string) {
   try {
@@ -145,4 +147,40 @@ export async function getUserTrophy(trophyId: string, userId: string) {
   } else {
     return null;
   }
+}
+
+export async function getUserTrophies(userId: User['uid']) {
+  const userTrophiesQuery = query(
+    collection(db, 'userTrophies'),
+    where('userId', '==', userId)
+  );
+  const userTrophiesSnapshot = await getDocs(userTrophiesQuery);
+  const trophyIds = userTrophiesSnapshot.docs.map((doc) => doc.data().trophyId);
+
+  if (trophyIds.length === 0) {
+    return [];
+  }
+
+  const trophiesQuery = query(
+    collection(db, 'trophies'),
+    where('__name__', 'in', trophyIds)
+  );
+  const trophiesSnapshot = await getDocs(trophiesQuery);
+
+  const trophies = await Promise.all(
+    trophiesSnapshot.docs.map(async (doc) => {
+      const trophyData = doc.data() as Trophy;
+      const { episodeId } = trophyData;
+
+      const episode = await getEpisode(episodeId);
+
+      return {
+        ...trophyData,
+        id: doc.id,
+        episode,
+      };
+    })
+  );
+
+  return trophies;
 }
