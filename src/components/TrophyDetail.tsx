@@ -18,6 +18,7 @@ import {
   addEpisodeUserTrophie,
   getUserTrophy,
 } from '@/services/trophies.service';
+import { addTrophyLevelToUser } from '@/services/users.service';
 
 type TaskDetailProps = {
   trophy: Trophy;
@@ -49,8 +50,9 @@ const TrophyDetail = ({
     }
   };
 
-  const finishTask = () => {
+  const finishTask = (trophyLevel: number) => {
     achieveTask();
+    addTrophyLevelToUser(currentUser.uid, trophyLevel);
     setIsTrophyDetailOpen(false);
   };
 
@@ -158,7 +160,7 @@ const TrophyDetail = ({
         </div>
         {!isUserTrophy(trophy.id) && (
           <button
-            onClick={finishTask}
+            onClick={() => finishTask(trophy.level)}
             disabled={!selectedAnswer}
             className={`${
               !selectedAnswer

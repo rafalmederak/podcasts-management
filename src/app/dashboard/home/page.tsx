@@ -18,25 +18,24 @@ import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 const DashboardHome: React.FC = () => {
   const { currentUser } = useAuth();
-  if (!currentUser) return null;
 
   const { data: likedCount } = useSWR(
-    `user_liked_count_${currentUser.uid}`,
-    () => getUserLikedCount(currentUser.uid)
+    currentUser ? `user_liked_count_${currentUser.uid}` : null,
+    () => currentUser && getUserLikedCount(currentUser.uid)
   );
 
   const { data: episodesData, isLoading: episodesIsLoading } = useSWR(
-    `user_liked_episodes_${currentUser.uid}`,
-    () => getUserLikedEpisodes(currentUser.uid, 3)
+    currentUser ? `user_liked_episodes_${currentUser.uid}` : null,
+    () => currentUser && getUserLikedEpisodes(currentUser.uid, 3)
   );
 
   const { data: subscriptionsCount } = useSWR(
-    `user_subscriptions_count_${currentUser.uid}`,
-    () => getUserSubscriptionsCount(currentUser.uid)
+    currentUser ? `user_subscriptions_count_${currentUser.uid}` : null,
+    () => currentUser && getUserSubscriptionsCount(currentUser.uid)
   );
   const { data: podcastsData, isLoading: podcastsIsLoading } = useSWR(
-    `user_subscribed_podcasts_${currentUser.uid}`,
-    () => getUserSubscribedPodcasts(currentUser.uid, 3)
+    currentUser ? `user_subscribed_podcasts_${currentUser.uid}` : null,
+    () => currentUser && getUserSubscribedPodcasts(currentUser.uid, 3)
   );
 
   return (

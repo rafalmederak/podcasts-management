@@ -10,17 +10,19 @@ import React, {
 import { auth, db } from '@/firebase/firebaseConfig';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { getUserLevel } from '@/services/users.service';
 
 interface ExtendedUser extends User {
   displayName: string;
   photoURL: string | null;
+  level: number;
 }
 
 interface AuthContextType {
   userLoggedIn: boolean;
   isEmailUser: boolean;
   //   isGoogleUser: boolean;
-  currentUser: User | null;
+  currentUser: ExtendedUser | null;
   setCurrentUser: React.Dispatch<React.SetStateAction<ExtendedUser | null>>;
 }
 
@@ -63,6 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       // setIsGoogleUser(isGoogle);
 
       setUserLoggedIn(true);
+      const userLevel = await getUserLevel(user.uid);
 
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
@@ -70,6 +73,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       const extendedUser: ExtendedUser = {
         ...user,
         displayName: firestoreUserData.displayName || user.displayName || '',
+        level: userLevel,
         ...firestoreUserData,
       };
 

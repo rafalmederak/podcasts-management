@@ -1,13 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/authContext';
 import { doSignOut } from '@/contexts/authContext/auth';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/24/solid';
+import {
+  ArrowLeftStartOnRectangleIcon,
+  PresentationChartBarIcon,
+} from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '@/firebase/firebaseConfig';
 
 const DashboardTopBar = () => {
-  const { userLoggedIn, currentUser } = useAuth();
+  const { currentUser } = useAuth();
+
   const router = useRouter();
+
+  const [userLevel, setUserLevel] = useState<number>(0);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    const userRef = doc(db, 'users', currentUser.uid);
+
+    const unsubscribe = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setUserLevel(data.level);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [currentUser]);
+
+  if (!currentUser) return null;
 
   const handleSignOut = async () => {
     try {
@@ -17,19 +43,17 @@ const DashboardTopBar = () => {
       console.error('Error logging out:', (error as Error).message);
     }
   };
-
-  //   if (!userLoggedIn) {
-  //     return null;
-  //   }
   return (
     <div className="flex items-center justify-between w-full px-16 h-14 border-gray-100 border-b-2">
       <p>
         Welcome back,{' '}
-        <span className="font-medium">
-          {userLoggedIn && currentUser?.displayName}
-        </span>
+        <span className="font-medium">{currentUser.displayName}</span>
       </p>
       <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded-md transition-all">
+          <PresentationChartBarIcon className="w-6 h-6" />
+          <p>{userLevel}</p>
+        </div>
         <div className="relative w-8 h-8 rounded-md shadow-md">
           <Image
             src={currentUser?.photoURL || ''}
