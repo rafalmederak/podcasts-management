@@ -1,6 +1,5 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { User } from 'firebase/auth';
 
 //types
 import { Trophy, UserTrophy } from '@/types/trophy';
@@ -19,12 +18,13 @@ import {
   getUserTrophy,
 } from '@/services/trophies.service';
 import { addTrophyLevelToUser } from '@/services/users.service';
+import { ExtendedUser } from '@/types/user';
 
 type TaskDetailProps = {
   trophy: Trophy;
   setIsTrophyDetailOpen: Dispatch<SetStateAction<boolean>>;
   isUserTrophy: (itemId: Trophy['id']) => boolean | null;
-  currentUser: User;
+  currentUser: ExtendedUser;
 };
 
 const TrophyDetail = ({

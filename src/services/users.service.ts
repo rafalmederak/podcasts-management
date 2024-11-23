@@ -1,6 +1,14 @@
 import { db } from '@/firebase/firebaseConfig';
+import { ExtendedUser } from '@/types/user';
 import { User } from 'firebase/auth';
-import { doc, getDoc, increment, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  increment,
+  updateDoc,
+} from 'firebase/firestore';
 
 export async function getUserLevel(userId: User['uid']): Promise<number> {
   try {
@@ -32,4 +40,12 @@ export async function addTrophyLevelToUser(
   } catch (error) {
     console.error(error);
   }
+}
+
+export async function getUsers() {
+  const querySnapshot = await getDocs(collection(db, 'users'));
+  return querySnapshot.docs.map((doc) => ({
+    uid: doc.id,
+    ...doc.data(),
+  })) as ExtendedUser[];
 }

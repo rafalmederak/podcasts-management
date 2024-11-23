@@ -11,12 +11,7 @@ import { auth, db } from '@/firebase/firebaseConfig';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { getUserLevel } from '@/services/users.service';
-
-interface ExtendedUser extends User {
-  displayName: string;
-  photoURL: string | null;
-  level: number;
-}
+import { ExtendedUser } from '@/types/user';
 
 interface AuthContextType {
   userLoggedIn: boolean;
