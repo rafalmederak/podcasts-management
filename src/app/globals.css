@@ -56,8 +56,12 @@ input:focus {
   .nav__item {
     @apply cursor-pointer flex w-40 h-8 items-center justify-start rounded-lg p-2;
   }
-}
 
-.page__title {
-  @apply text-2xl font-semibold;
+  .page__width {
+    @apply mx-auto max-w-[1920px];
+  }
+
+  .page__title {
+    @apply text-2xl font-semibold;
+  }
 }

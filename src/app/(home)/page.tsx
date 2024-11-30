@@ -4,7 +4,7 @@ import HeroMain from '@/assets/hero/podcast-management-hero.png';
 
 export default function Home() {
   return (
-    <main className="flex flex-col 2xl:flex-row min-h-screen items-start 2xl:items-center justify-center p-10 2xl:p-40 gap-20 2xl:gap-40">
+    <main className="page__width flex flex-col 2xl:flex-row min-h-screen items-start 2xl:items-center justify-center p-10 2xl:p-40 gap-20 2xl:gap-40">
       <div className="flex flex-col w-full 2xl:w-2/5 gap-8 items-start">
         <h1 className=" text-2xl font-semibold">
           Revolutionize How You Listen to Podcasts

@@ -50,7 +50,7 @@ const LoginPage = () => {
   //   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-14 px-4 py-10">
+    <div className="page__width flex flex-col items-center justify-center min-h-screen gap-14 px-4 py-10">
       <Image
         src={Logo}
         alt="logo"

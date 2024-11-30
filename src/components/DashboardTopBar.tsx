@@ -44,29 +44,31 @@ const DashboardTopBar = () => {
     }
   };
   return (
-    <div className="flex items-center justify-between w-full px-16 h-14 border-gray-100 border-b-2">
-      <p>
-        Welcome back,{' '}
-        <span className="font-medium">{currentUser.displayName}</span>
-      </p>
-      <div className="flex gap-2 items-center">
-        <div className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded-md transition-all">
-          <PresentationChartBarIcon className="w-6 h-6" />
-          <p>{userLevel}</p>
-        </div>
-        <div className="relative w-8 h-8 rounded-md shadow-md">
-          <Image
-            src={currentUser?.photoURL || ''}
-            alt="User photo"
-            fill={true}
-            className="rounded-lg object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+    <div className="flex h-14 w-full border-gray-100 border-b-2">
+      <div className="page__width w-full flex items-center justify-between  px-16">
+        <p>
+          Welcome back,{' '}
+          <span className="font-medium">{currentUser.displayName}</span>
+        </p>
+        <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded-md transition-all">
+            <PresentationChartBarIcon className="w-6 h-6" />
+            <p>{userLevel}</p>
+          </div>
+          <div className="relative w-8 h-8 rounded-md shadow-md">
+            <Image
+              src={currentUser?.photoURL || ''}
+              alt="User photo"
+              fill={true}
+              className="rounded-lg object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </div>
+          <ArrowLeftStartOnRectangleIcon
+            onClick={handleSignOut}
+            className="w-8 h-8 p-1 cursor-pointer  hover:bg-gray-100 transition-all rounded-md"
           />
         </div>
-        <ArrowLeftStartOnRectangleIcon
-          onClick={handleSignOut}
-          className="w-8 h-8 p-1 cursor-pointer  hover:bg-gray-100 transition-all rounded-md"
-        />
       </div>
     </div>
   );
