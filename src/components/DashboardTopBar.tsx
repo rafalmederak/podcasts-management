@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/authContext';
 import { doSignOut } from '@/contexts/authContext/auth';
-import { useRouter } from 'next/navigation';
-import {
-  ArrowLeftStartOnRectangleIcon,
-  PresentationChartBarIcon,
-} from '@heroicons/react/24/solid';
+import { usePathname, useRouter } from 'next/navigation';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
+import Logo from '@/assets/logo/podcasts-logo.webp';
+import {
+  Popover,
+  PopoverBackdrop,
+  PopoverButton,
+  PopoverPanel,
+  Transition,
+} from '@headlessui/react';
+import DashboardTopBarItems from './DashboardTopBarItems';
+import {
+  dashboardNavLinks,
+  dashboardSupportLinks,
+} from './DashboardNavigation';
+import NavLink from './NavLink';
 
 const DashboardTopBar = () => {
+  const pathname = usePathname();
   const { currentUser } = useAuth();
 
   const router = useRouter();
@@ -44,33 +56,103 @@ const DashboardTopBar = () => {
     }
   };
   return (
-    <div className="flex h-14 w-full border-gray-100 border-b-2">
-      <div className="page__width w-full flex items-center justify-between  px-16">
-        <p>
+    <Popover className="flex sticky top-0 h-14 z-10 bg-white w-full border-gray-100 border-b-2">
+      <div className="page__width w-full flex items-center justify-between gap-8 py-4 px-8 md:px-12 lg:px-16">
+        <Image
+          src={Logo}
+          alt="logo"
+          priority={true}
+          className="md:hidden w-8 h-8 rounded-lg drop-shadow-lg shadow-black"
+        />
+        <p className="hidden md:block">
           Welcome back,{' '}
           <span className="font-medium">{currentUser.displayName}</span>
         </p>
-        <div className="flex gap-2 items-center">
-          <div className="flex items-center gap-1 hover:bg-gray-100 p-1 rounded-md transition-all">
-            <PresentationChartBarIcon className="w-6 h-6" />
-            <p>{userLevel}</p>
-          </div>
-          <div className="relative w-8 h-8 rounded-md shadow-md">
-            <Image
-              src={currentUser?.photoURL || ''}
-              alt="User photo"
-              fill={true}
-              className="rounded-lg object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          </div>
-          <ArrowLeftStartOnRectangleIcon
-            onClick={handleSignOut}
-            className="w-8 h-8 p-1 cursor-pointer  hover:bg-gray-100 transition-all rounded-md"
+        <PopoverButton>
+          <Bars3Icon className="md:hidden w-8 h-8" />
+        </PopoverButton>
+        <div className="hidden md:flex gap-2 items-center">
+          <DashboardTopBarItems
+            userLevel={userLevel}
+            currentUser={currentUser}
+            handleSignOut={handleSignOut}
           />
         </div>
       </div>
-    </div>
+      <PopoverBackdrop
+        className={'md:hidden fixed inset-0 bg-black opacity-20'}
+      />
+      <Transition
+        enter="ease-out duration-300"
+        enterFrom="opacity-0 scale-95"
+        enterTo="opacity-100 scale-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100 scale-100"
+        leaveTo="opacity-0 scale-95"
+      >
+        <PopoverPanel
+          className={
+            'absolute inset-x-0 top-0 origin-top-right transform p-2 transition md:hidden'
+          }
+        >
+          <div className="flex flex-col gap-4 bg-white rounded-lg shadow-lg ring-1 ring-slate-300 p-5 h-[calc(100vh-1rem)] lg:h-auto overflow-y-auto">
+            <div className="flex w-full justify-between">
+              <Image
+                src={Logo}
+                alt="logo"
+                priority={true}
+                className="md:hidden w-8 h-8 rounded-lg drop-shadow-lg shadow-black"
+              />
+              <PopoverButton className="h-6 w-6 ">
+                <XMarkIcon className="h-6 w-6" />
+              </PopoverButton>
+            </div>
+            <span className="border border-b-1" />
+            <div className="flex w-full items-center justify-between gap-8">
+              <p>
+                Welcome back,{' '}
+                <span className="font-medium">{currentUser.displayName}</span>
+              </p>
+              <div className="flex gap-2 items-center">
+                <DashboardTopBarItems
+                  userLevel={userLevel}
+                  currentUser={currentUser}
+                  handleSignOut={handleSignOut}
+                />
+              </div>
+            </div>
+            <span className="border border-b-1" />
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-5 mt-2 mb-5">
+                {dashboardNavLinks.map((item) => (
+                  <PopoverButton>
+                    <NavLink
+                      item={item}
+                      pathname={pathname}
+                      key={item.link}
+                      popoverButton={true}
+                    />
+                  </PopoverButton>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-5 mb-4">
+                {dashboardSupportLinks.map((item) => (
+                  <PopoverButton>
+                    <NavLink
+                      item={item}
+                      pathname={pathname}
+                      key={item.link}
+                      popoverButton={true}
+                    />
+                  </PopoverButton>
+                ))}
+              </div>
+            </div>
+          </div>
+        </PopoverPanel>
+      </Transition>
+    </Popover>
   );
 };
 

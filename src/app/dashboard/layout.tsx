@@ -16,7 +16,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   }, [userLoggedIn, router]);
   return (
     <>
-      <div className="hidden md:flex">
+      <div className="flex">
         <DashboardNavigation />
         <div className="flex flex-col w-full">
           <DashboardTopBar />
@@ -24,10 +24,6 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             {children}
           </div>
         </div>
-      </div>
-      <div className="flex flex-col items-center justify-center min-h-screen md:hidden">
-        <p>Currently, the app is not designed for mobile devices.</p>
-        <p>Please open an app in a larger window.</p>
       </div>
     </>
   );
