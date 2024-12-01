@@ -35,11 +35,6 @@ const RankingPage = () => {
     );
   }, [rankedData, searchQuery]);
 
-  if (usersIsLoading || !usersData) {
-    return (
-      <div className="flex flex-col w-full gap-10 px-4">Loading users...</div>
-    );
-  }
   return (
     <div className="flex flex-col w-full gap-10 md:px-4">
       <h2 className="page__title">Ranking</h2>
@@ -53,7 +48,9 @@ const RankingPage = () => {
             />
           </div>
           <div className="flex flex-col flex-wrap gap-4 ">
-            {filteredData.length === 0 ? (
+            {usersIsLoading || !usersData ? (
+              <p>Loading users...</p>
+            ) : filteredData.length === 0 ? (
               <div className="w-full h-full text-lg flex">No users found.</div>
             ) : (
               filteredData

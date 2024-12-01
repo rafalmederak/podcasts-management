@@ -29,13 +29,6 @@ const AchievmentsPage = () => {
     );
   }, [trophiesData, searchQuery]);
 
-  if (trophiesIsLoading || !trophiesData) {
-    return (
-      <div className="flex flex-col w-full gap-10 px-4">
-        Loading trophies...
-      </div>
-    );
-  }
   return (
     <div className="page__responsive">
       <h2 className="page__title">Achievments</h2>
@@ -45,7 +38,9 @@ const AchievmentsPage = () => {
         searchTitle={'Search trophy or episode...'}
       />
       <div className="flex flex-wrap gap-x-[8%] gap-y-8 sm:gap-x-8 w-full">
-        {filteredData.length === 0 ? (
+        {trophiesIsLoading || !trophiesData ? (
+          <p>Loading trophies...</p>
+        ) : filteredData.length === 0 ? (
           <div className="w-full h-full text-lg flex">No trophies found.</div>
         ) : (
           filteredData

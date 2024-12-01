@@ -16,25 +16,30 @@ import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 
 const PodcastsPage = () => {
-  const { data } = useSWR('podcasts', getPodcasts);
+  const { data: podcastsData, isLoading: podcastsIsLoading } = useSWR(
+    'podcasts',
+    getPodcasts
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredData = useMemo(() => {
-    if (!data) return [];
-    return data.filter(
+    if (!podcastsData) return [];
+    return podcastsData.filter(
       (item: Podcast) =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.host.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [data, searchQuery]);
+  }, [podcastsData, searchQuery]);
 
   return (
     <div className="page__responsive">
       <h2 className="page__title">Podcasts</h2>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="flex flex-wrap gap-12 w-full">
-        {filteredData.length === 0 ? (
+        {podcastsIsLoading || !podcastsData ? (
+          <p>Loading podcasts...</p>
+        ) : filteredData.length === 0 ? (
           <div className="w-full h-full text-lg flex">No podcasts found.</div>
         ) : (
           filteredData.map((item) => (

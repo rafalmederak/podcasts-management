@@ -27,20 +27,14 @@ const LikedPage = () => {
     );
   }, [episodesData, searchQuery]);
 
-  if (episodesIsLoading || !episodesData) {
-    return (
-      <div className="flex flex-col w-full gap-10 px-4">
-        Loading episodes...
-      </div>
-    );
-  }
-
   return (
     <div className="page__responsive">
       <h2 className="page__title">Liked episodes</h2>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="flex flex-wrap gap-12 w-full">
-        {filteredData.length === 0 ? (
+        {episodesIsLoading || !episodesData ? (
+          <p>Loading episodes...</p>
+        ) : filteredData.length === 0 ? (
           <div className="w-full h-full text-lg flex">No episodes found.</div>
         ) : (
           filteredData.map((item) => (
