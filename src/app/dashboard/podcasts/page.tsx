@@ -62,12 +62,6 @@ const PodcastsPage = () => {
                   <h3 className="font-medium text-lg">{item.title}</h3>
                   <h2 className="text-sm">{item.host}</h2>
                 </div>
-                <div className="relative w-7 h-7 ml-2">
-                  <TrophyIcon className="w-6 h-6 mr-[0.3rem]" />
-                  <span className="absolute bottom-0 right-0 bg-defaultBeige-300 h-[1.1rem] min-w-[1.1rem] max-w-[1.6rem] p-[0.2rem] rounded-full flex items-center justify-center text-xs">
-                    {item.totalTrophies}
-                  </span>
-                </div>
               </div>
             </Link>
           ))
