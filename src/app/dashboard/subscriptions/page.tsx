@@ -37,7 +37,7 @@ const SubscriptionsPage = () => {
   }
 
   return (
-    <div className="flex flex-col w-full gap-10 px-4">
+    <div className="page__responsive">
       <h2 className="page__title">Subscriptions</h2>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="flex flex-wrap gap-12 w-full">
@@ -50,9 +50,9 @@ const SubscriptionsPage = () => {
             <Link
               key={item.id}
               href={`/dashboard/podcasts/${item.id}`}
-              className="flex flex-col items-start justify-start w-72 hover:scale-105 cursor-pointer transition-all"
+              className="flex flex-col items-start justify-start w-full sm:w-72 hover:scale-105 cursor-pointer transition-all"
             >
-              <div className="w-72 h-72 relative">
+              <div className="w-full h-72 relative">
                 <Image
                   src={item.photo}
                   alt="Podcast"

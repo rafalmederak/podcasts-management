@@ -197,20 +197,20 @@ const EpisodePage = () => {
   return (
     <div className="flex w-full flex-col items-start gap-6">
       {isTrophyDetailOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-10 backdrop-blur-sm z-10"></div>
+        <div className="fixed top-[56px] left-[208px] right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm z-10"></div>
       )}
       <Link
         href={`/dashboard/podcasts/${params.podcastId}`}
-        className="inline-flex items-center gap-2 mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
+        className="inline-flex items-center gap-2 md:mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
       >
         <ArrowLeftCircleIcon className="w-6 h-6 text-defaultBlue-300 cursor-pointer" />
         <h1 className="text-lg font-medium">{podcastData.title}</h1>
       </Link>
       <div className="flex flex-col 2xl:flex-row gap-8 2xl:gap-6 w-full">
-        <div className="flex flex-col w-full 2xl:w-3/5 max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] overflow-y-auto 2xl:pb-4 px-4">
+        <div className="flex flex-col w-full 2xl:w-3/5 lg:max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] lg:overflow-y-auto 2xl:pb-4 md:px-4">
           <div className="flex flex-col gap-6">
-            <div className="flex">
-              <div className="w-52 h-52 relative">
+            <div className="flex flex-col md:flex-row">
+              <div className="w-full md:w-52 h-52 relative">
                 <Image
                   src={episodeData.photo}
                   alt="Demo photo"
@@ -220,7 +220,7 @@ const EpisodePage = () => {
                 />
               </div>
               <div className="flex flex-col items-start justify-between">
-                <div className="flex flex-col gap-2 ml-5 p-1">
+                <div className="flex flex-col gap-2 mt-4 md:mt-0 md:ml-5 p-1">
                   <h3 className="page__title">{episodeData.title}</h3>
                   <p className="text-md text-defaultBlue-300">
                     {episodeData.date}
@@ -236,7 +236,7 @@ const EpisodePage = () => {
                 </div>
                 <button
                   onClick={isEpisodeLiked ? handleUnlike : handleLike}
-                  className="flex items-center cursor-pointer rounded-md hover:bg-gray-100 transition-all ml-5 pl-1 py-1 pr-2"
+                  className="flex items-center cursor-pointer rounded-md hover:bg-gray-100 transition-all md:ml-5 pl-1 py-1 pr-2"
                 >
                   {isEpisodeLiked ? (
                     <CheckCircleIcon className="w-5 h-5 text-green-600" />
@@ -250,7 +250,7 @@ const EpisodePage = () => {
               </div>
             </div>
             <p>{episodeData.description}</p>
-            <div className="flex gap-2">
+            <div className="flex flex-col lg:flex-row gap-2">
               <div className="flex items-start ">
                 <button onClick={togglePlay}>
                   {isAudioPlaying ? (
@@ -264,9 +264,9 @@ const EpisodePage = () => {
                   src={episodeData.audioURL}
                   preload="auto"
                 />
-                <div className="flex flex-col mt-[3px] ml-1">
+                <div className="flex flex-col mt-[3px] w-full md:w-96 ml-1">
                   <div
-                    className="group w-96 h-6 rounded-lg bg-gray-200 relative border-gray-200 border-2"
+                    className="group w-full md:w-96 h-6 rounded-lg bg-gray-200 relative border-gray-200 border-2"
                     onClick={handleProgressClick}
                   >
                     <div
@@ -339,9 +339,9 @@ const EpisodePage = () => {
             </div>
           </div>
         </div>
-        <div className="flex w-full 2xl:w-2/5 flex-col px-4 2xl:px-0">
-          <h2 className="text-lg font-bold 2xl:px-4">Episode Tasks</h2>
-          <div className="flex flex-col gap-2  max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] overflow-y-auto 2xl:px-4 pt-2">
+        <div className="flex w-full 2xl:w-2/5 flex-col">
+          <h2 className="text-lg font-bold md:px-4">Episode Tasks</h2>
+          <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] lg:overflow-y-auto md:px-4 pt-2">
             <div className="flex flex-col w-full gap-4 my-1 relative">
               {trophiesData?.length == 0 && (
                 <p>Currently there are no trophies for this episode.</p>

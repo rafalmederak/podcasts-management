@@ -39,7 +39,7 @@ const DashboardHome: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col w-full gap-10 px-4">
+    <div className="page__responsive">
       <h2 className="page__title">Home</h2>
       <div className="flex flex-col gap-6">
         <div className="flex items-center">
@@ -58,9 +58,9 @@ const DashboardHome: React.FC = () => {
               <Link
                 key={item.id}
                 href={`/dashboard/podcasts/${item.id}`}
-                className="flex flex-col items-start justify-start w-72 hover:scale-105 cursor-pointer transition-all"
+                className="flex flex-col items-start justify-start w-full sm:w-72 hover:scale-105 cursor-pointer transition-all"
               >
-                <div className="w-72 h-72 relative">
+                <div className="w-full h-72 relative">
                   <Image
                     src={item.photo}
                     alt="Podcast"
@@ -112,9 +112,9 @@ const DashboardHome: React.FC = () => {
               <Link
                 key={item.id}
                 href={`/dashboard/podcasts/${item.podcastId}/${item.id}`}
-                className="flex flex-col items-start justify-start w-72 hover:scale-105 cursor-pointer transition-all"
+                className="flex flex-col items-start justify-start w-full sm:w-72 hover:scale-105 cursor-pointer transition-all"
               >
-                <div className="w-72 h-72 relative">
+                <div className="w-full h-72 relative">
                   <Image
                     src={item.photo}
                     alt="Episode"

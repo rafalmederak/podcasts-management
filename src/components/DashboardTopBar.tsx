@@ -20,6 +20,7 @@ import {
   dashboardSupportLinks,
 } from './DashboardNavigation';
 import NavLink from './NavLink';
+import Link from 'next/link';
 
 const DashboardTopBar = () => {
   const pathname = usePathname();
@@ -58,12 +59,14 @@ const DashboardTopBar = () => {
   return (
     <Popover className="flex sticky top-0 h-14 z-10 bg-white w-full border-gray-100 border-b-2">
       <div className="page__width w-full flex items-center justify-between gap-8 py-4 px-8 md:px-12 lg:px-16">
-        <Image
-          src={Logo}
-          alt="logo"
-          priority={true}
-          className="md:hidden w-8 h-8 rounded-lg drop-shadow-lg shadow-black"
-        />
+        <Link href={'/dashboard/home'} className="md:hidden cursor-pointer">
+          <Image
+            src={Logo}
+            alt="logo"
+            priority={true}
+            className=" w-8 h-8 rounded-lg drop-shadow-lg shadow-black"
+          />
+        </Link>
         <p className="hidden md:block">
           Welcome back,{' '}
           <span className="font-medium">{currentUser.displayName}</span>

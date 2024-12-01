@@ -37,14 +37,14 @@ const AchievmentsPage = () => {
     );
   }
   return (
-    <div className="flex flex-col w-full gap-10 px-4">
+    <div className="page__responsive">
       <h2 className="page__title">Achievments</h2>
       <SearchBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         searchTitle={'Search trophy or episode...'}
       />
-      <div className="flex flex-wrap gap-8 w-full">
+      <div className="flex flex-wrap gap-x-[8%] gap-y-8 sm:gap-x-8 w-full">
         {filteredData.length === 0 ? (
           <div className="w-full h-full text-lg flex">No trophies found.</div>
         ) : (
@@ -54,9 +54,9 @@ const AchievmentsPage = () => {
               <Link
                 key={item.id}
                 href={`/dashboard/podcasts/${item.episode.podcastId}/${item.episodeId}`}
-                className="flex flex-col items-start justify-start w-48 hover:scale-105 cursor-pointer transition-all"
+                className="flex flex-col items-start justify-start w-[46%] sm:w-48 hover:scale-105 cursor-pointer transition-all"
               >
-                <div className="w-48 h-48 relative">
+                <div className="w-full h-48 relative">
                   <Image
                     src={item.photo}
                     alt="Trophy"

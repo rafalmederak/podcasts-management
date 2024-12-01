@@ -41,12 +41,12 @@ const RankingPage = () => {
     );
   }
   return (
-    <div className="flex flex-col w-full gap-10 px-4">
+    <div className="flex flex-col w-full gap-10 md:px-4">
       <h2 className="page__title">Ranking</h2>
-      <div className="flex flex-col 2xl:flex-row w-full gap-12">
+      <div className="flex flex-col 2xl:flex-row w-full gap-8">
         <div className="flex flex-col gap-6 w-full 2xl:w-3/5">
           <div className="flex justify-between items-center ">
-            <h3 className="font-medium text-lg">All time</h3>
+            <h3 className="font-medium text-lg w-1/2">All time</h3>
             <SearchBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -92,7 +92,7 @@ const RankingPage = () => {
             )}
           </div>
         </div>
-        <div className="w-full 2xl:w-2/5 h-[calc(100vh-218px)] relative">
+        <div className="w-full 2xl:w-2/5 h-96 md:h-[40rem] 2xl:h-[calc(100vh-218px)] relative">
           <Image
             src={Trophy}
             alt="Trophy"

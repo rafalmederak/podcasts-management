@@ -20,7 +20,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <DashboardNavigation />
         <div className="flex flex-col w-full">
           <DashboardTopBar />
-          <div className="page__width w-full flex px-12 py-11 2xl:h-[calc(100vh-58px)]">
+          <div className="page__width w-full flex px-8 lg:px-12 py-11 2xl:h-[calc(100vh-58px)]">
             {children}
           </div>
         </div>

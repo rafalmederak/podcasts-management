@@ -7,7 +7,7 @@ import useSWR from 'swr';
 const HelpPage = () => {
   const { data } = useSWR('faq', getFAQ);
   return (
-    <div className="flex flex-col w-full gap-10 px-4">
+    <div className="page__responsive gap-10">
       <h2 className="page__title">FAQ</h2>
       <div className="flex flex-col gap-6">
         {data?.map((item) => (
