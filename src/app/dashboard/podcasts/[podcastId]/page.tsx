@@ -19,6 +19,7 @@ import { getPodcastRanking } from '@/services/trophies.service';
 import { useAuth } from '@/contexts/authContext';
 import Link from 'next/link';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import UserInitialsLogo from '@/components/UserInitialsLogo';
 
 const PodcastProfilePage = () => {
   const { currentUser } = useAuth();
@@ -183,13 +184,12 @@ const PodcastProfilePage = () => {
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
-                          <p className="flex items-center justify-center rounded-md shadow-md w-8 h-8 text-center border">
-                            {item.displayName
-                              .split(' ')
-                              .map((displayName: string) => displayName[0])
-                              .join('')
-                              .toUpperCase()}
-                          </p>
+                          <UserInitialsLogo
+                            displayName={item.displayName}
+                            rounded="md"
+                            width={8}
+                            height={8}
+                          />
                         )}
                       </div>
                       <p className="ml-1">{item.displayName}</p>

@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { PresentationChartBarIcon, StarIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '@/contexts/authContext';
 import Trophy from '@/assets/ranking/trophy.jpg';
+import UserInitialsLogo from '@/components/UserInitialsLogo';
 
 const RankingPage = () => {
   const { currentUser } = useAuth();
@@ -65,15 +66,24 @@ const RankingPage = () => {
                     )}
                     <p className="min-w-4 text-left">{item.originalRank}</p>
                     <div className="w-10">
-                      <div className="w-10 h-10 relative">
-                        <Image
-                          src={item.photoURL ? item.photoURL : ''}
-                          alt="Podcast"
-                          fill={true}
-                          className="rounded-lg shadow-md object-cover"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      {item.photoURL ? (
+                        <div className="w-10 h-10 relative">
+                          <Image
+                            src={item.photoURL}
+                            alt="Podcast"
+                            fill={true}
+                            className="rounded-lg shadow-md object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        </div>
+                      ) : (
+                        <UserInitialsLogo
+                          rounded="lg"
+                          height={10}
+                          displayName={item.displayName}
+                          width={10}
                         />
-                      </div>
+                      )}
                     </div>
                     <div className="flex w-full justify-between ml-2">
                       <h3 className="font-regular text-md">

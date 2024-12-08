@@ -128,11 +128,10 @@ const DashboardTopBar = () => {
             <div className="flex flex-col">
               <div className="flex flex-col gap-5 mt-2 mb-5">
                 {dashboardNavLinks.map((item) => (
-                  <PopoverButton>
+                  <PopoverButton key={item.link}>
                     <NavLink
                       item={item}
                       pathname={pathname}
-                      key={item.link}
                       popoverButton={true}
                     />
                   </PopoverButton>
@@ -141,11 +140,10 @@ const DashboardTopBar = () => {
 
               <div className="flex flex-col gap-5 mb-4">
                 {dashboardSupportLinks.map((item) => (
-                  <PopoverButton>
+                  <PopoverButton key={item.link}>
                     <NavLink
                       item={item}
                       pathname={pathname}
-                      key={item.link}
                       popoverButton={true}
                     />
                   </PopoverButton>
