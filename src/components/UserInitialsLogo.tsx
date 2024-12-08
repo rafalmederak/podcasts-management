@@ -1,7 +1,7 @@
 import React from 'react';
 
 type UserInitialsLogoProps = {
-  displayName: string;
+  displayName?: string | null;
   width: number;
   height: number;
   rounded: string;
@@ -13,6 +13,10 @@ const UserInitialsLogo = ({
   height,
   rounded,
 }: UserInitialsLogoProps) => {
+  if (!displayName) {
+    return null;
+  }
+
   return (
     <p
       className={`flex items-center justify-center rounded-${rounded} shadow-md w-${width} h-${height} text-center border`}

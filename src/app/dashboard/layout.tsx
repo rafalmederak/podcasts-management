@@ -1,19 +1,39 @@
 'use client';
 import DashboardNavigation from '@/components/DashboardNavigation';
 import DashboardTopBar from '@/components/DashboardTopBar';
-import { useAuth } from '@/contexts/authContext';
+import LoadingComponent from '@/components/Loading';
+import { auth } from '@/firebase/firebaseConfig';
 import { useRouter } from 'next/navigation';
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
-  const { userLoggedIn } = useAuth();
-
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (!userLoggedIn) {
-      router.replace('/login');
-    }
-  }, [userLoggedIn, router]);
+    const checkUserStatus = async () => {
+      try {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+          if (!user) {
+            return router.push('/login');
+          }
+
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+
+    checkUserStatus();
+  }, []);
+
+  if (loading) {
+    return <LoadingComponent />;
+  }
   return (
     <>
       <div className="flex">

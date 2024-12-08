@@ -1,26 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useState } from 'react';
 import Logo from '@/assets/logo/podcasts-logo.webp';
 import { doSignInWithEmailAndPassword } from '@/contexts/authContext/auth';
-import { useAuth } from '@/contexts/authContext';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const LoginPage = () => {
-  const { userLoggedIn } = useAuth();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [isSigningIn, setIsSigningIn] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
-
-  const router = useRouter();
-  useEffect(() => {
-    if (userLoggedIn) {
-      router.replace('/dashboard/home');
-    }
-  }, [userLoggedIn, router]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

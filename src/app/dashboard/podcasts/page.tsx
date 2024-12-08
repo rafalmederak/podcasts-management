@@ -11,7 +11,6 @@ import { Podcast } from '@/types/podcast';
 import { getPodcasts } from '@/services/podcasts.service';
 
 //icons
-import { TrophyIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 

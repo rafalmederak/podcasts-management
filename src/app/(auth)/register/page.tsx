@@ -3,44 +3,22 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Logo from '@/assets/logo/podcasts-logo.webp';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth, db } from '@/firebase/firebaseConfig';
-import { doc, setDoc } from 'firebase/firestore';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createUser } from '@/services/users.service';
 const RegisterPage = () => {
+  const router = useRouter();
   const [displayName, setDisplayName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      await updateProfile(user, { displayName });
-
-      await setDoc(doc(db, 'users', user.uid), {
-        displayName,
-        email,
-        level: 0,
-        photoURL: '',
-        createdAt: new Date(),
-      });
-
-      setSuccess(true);
-      setDisplayName('');
-      setEmail('');
-      setPassword('');
+      const newUser = await createUser(email, password, displayName);
+      return router.push('/dashboard/home');
     } catch (error: any) {
       setError(error.message);
     }
@@ -88,14 +66,6 @@ const RegisterPage = () => {
         </button>
       </form>
       {error && <p>{error}</p>}
-      {success && (
-        <div className="flex flex-col items-center gap-2">
-          <p>Registration successful!</p>
-          <Link href={'/dashboard/home'} className="text-defaultBlue-400">
-            Go to Login Page
-          </Link>
-        </div>
-      )}
     </div>
   );
 };

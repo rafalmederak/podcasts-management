@@ -6,12 +6,12 @@ import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import Image from 'next/image';
 import { PresentationChartBarIcon, StarIcon } from '@heroicons/react/24/solid';
-import { useAuth } from '@/contexts/authContext';
 import Trophy from '@/assets/ranking/trophy.jpg';
 import UserInitialsLogo from '@/components/UserInitialsLogo';
+import { auth } from '@/firebase/firebaseConfig';
 
 const RankingPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = auth;
   if (!currentUser) return null;
 
   const [searchQuery, setSearchQuery] = useState('');

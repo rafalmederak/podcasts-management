@@ -6,10 +6,10 @@ import Link from 'next/link';
 import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import Image from 'next/image';
-import { useAuth } from '@/contexts/authContext';
+import { auth } from '@/firebase/firebaseConfig';
 
 const LikedPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = auth;
   if (!currentUser) return null;
 
   const [searchQuery, setSearchQuery] = useState('');

@@ -18,13 +18,13 @@ import {
   getUserTrophy,
 } from '@/services/trophies.service';
 import { addTrophyLevelToUser } from '@/services/users.service';
-import { ExtendedUser } from '@/types/user';
+import { User } from 'firebase/auth';
 
 type TaskDetailProps = {
   trophy: Trophy;
   setIsTrophyDetailOpen: Dispatch<SetStateAction<boolean>>;
   isUserTrophy: (itemId: Trophy['id']) => boolean | null;
-  currentUser: ExtendedUser;
+  currentUser: User;
 };
 
 const TrophyDetail = ({

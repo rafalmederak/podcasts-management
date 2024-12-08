@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/contexts/authContext';
 import {
   getUserLikedCount,
   getUserLikedEpisodes,
@@ -15,9 +14,10 @@ import {
   getUserSubscriptionsCount,
 } from '@/services/podcasts.service';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import { auth } from '@/firebase/firebaseConfig';
 
 const DashboardHome: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = auth;
 
   const { data: likedCount } = useSWR(
     currentUser ? `user_liked_count_${currentUser.uid}` : null,

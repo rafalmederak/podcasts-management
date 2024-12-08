@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/authContext';
+import React from 'react';
+import { auth } from '@/firebase/firebaseConfig';
 import { doSignOut } from '@/contexts/authContext/auth';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseConfig';
 import Logo from '@/assets/logo/podcasts-logo.webp';
 import {
   Popover,
@@ -24,29 +22,9 @@ import Link from 'next/link';
 
 const DashboardTopBar = () => {
   const pathname = usePathname();
-  const { currentUser } = useAuth();
+  const { currentUser } = auth;
 
   const router = useRouter();
-
-  const [userLevel, setUserLevel] = useState<number>(0);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    const userRef = doc(db, 'users', currentUser.uid);
-
-    const unsubscribe = onSnapshot(userRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setUserLevel(data.level);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [currentUser]);
-
-  if (!currentUser) return null;
 
   const handleSignOut = async () => {
     try {
@@ -69,17 +47,13 @@ const DashboardTopBar = () => {
         </Link>
         <p className="hidden md:block">
           Welcome back,{' '}
-          <span className="font-medium">{currentUser.displayName}</span>
+          <span className="font-medium">{currentUser?.displayName}</span>
         </p>
         <PopoverButton>
           <Bars3Icon className="md:hidden w-8 h-8" />
         </PopoverButton>
         <div className="hidden md:flex gap-2 items-center">
-          <DashboardTopBarItems
-            userLevel={userLevel}
-            currentUser={currentUser}
-            handleSignOut={handleSignOut}
-          />
+          <DashboardTopBarItems handleSignOut={handleSignOut} />
         </div>
       </div>
       <PopoverBackdrop
@@ -114,14 +88,10 @@ const DashboardTopBar = () => {
             <div className="flex w-full items-center justify-between gap-8">
               <p>
                 Welcome back,{' '}
-                <span className="font-medium">{currentUser.displayName}</span>
+                <span className="font-medium">{currentUser?.displayName}</span>
               </p>
               <div className="flex gap-2 items-center">
-                <DashboardTopBarItems
-                  userLevel={userLevel}
-                  currentUser={currentUser}
-                  handleSignOut={handleSignOut}
-                />
+                <DashboardTopBarItems handleSignOut={handleSignOut} />
               </div>
             </div>
             <span className="border border-b-1" />

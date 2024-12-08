@@ -6,11 +6,11 @@ import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import Image from 'next/image';
 import { getUserTrophies } from '@/services/trophies.service';
-import { useAuth } from '@/contexts/authContext';
 import { TrophyIcon } from '@heroicons/react/24/solid';
+import { auth } from '@/firebase/firebaseConfig';
 
 const AchievmentsPage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = auth;
   if (!currentUser) return null;
 
   const [searchQuery, setSearchQuery] = useState('');

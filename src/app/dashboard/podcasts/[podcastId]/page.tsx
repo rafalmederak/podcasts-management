@@ -16,13 +16,13 @@ import {
 } from '@heroicons/react/24/solid';
 import { getPodcastEpisodes } from '@/services/episodes.service';
 import { getPodcastRanking } from '@/services/trophies.service';
-import { useAuth } from '@/contexts/authContext';
 import Link from 'next/link';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import UserInitialsLogo from '@/components/UserInitialsLogo';
+import { auth } from '@/firebase/firebaseConfig';
 
 const PodcastProfilePage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = auth;
   if (!currentUser) return null;
 
   const params = useParams<{ podcastId: string }>();

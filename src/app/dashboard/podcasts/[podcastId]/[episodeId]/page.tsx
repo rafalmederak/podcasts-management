@@ -35,17 +35,15 @@ import {
   getEpisodeUserTrophies,
 } from '@/services/trophies.service';
 
-//context
-import { useAuth } from '@/contexts/authContext';
-
 //types
 import { Trophy, UserTrophy } from '@/types/trophy';
 
 //components
 import TrophyDetail from '@/components/TrophyDetail';
+import { auth } from '@/firebase/firebaseConfig';
 
 const EpisodePage = () => {
-  const { currentUser } = useAuth();
+  const { currentUser } = auth;
   if (!currentUser) return null;
   const params = useParams<{ podcastId: string; episodeId: string }>();
 
