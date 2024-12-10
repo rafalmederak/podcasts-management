@@ -1,4 +1,5 @@
 import { auth, db } from '@/firebase/firebaseConfig';
+import { IRegisterUserInputData } from '@/schemas/registerSchema';
 import { ExtendedUser } from '@/types/user';
 import {
   createUserWithEmailAndPassword,
@@ -59,19 +60,17 @@ export async function getUsers() {
 }
 
 export async function createUser(
-  email: string,
-  password: string,
-  displayName: string
+  data: IRegisterUserInputData
 ): Promise<{ uid: string }> {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
-      email,
-      password
+      data.email,
+      data.password
     );
     const user = userCredential.user;
 
-    await updateProfile(user, { displayName });
+    await updateProfile(user, { displayName: data.name });
 
     return {
       uid: user.uid,

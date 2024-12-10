@@ -1,8 +1,16 @@
 import React from 'react';
 
-const LoadingComponent = () => {
+type LoadingComponentProps = {
+  height?: string;
+};
+
+const LoadingComponent = ({ height }: LoadingComponentProps) => {
   return (
-    <div className="w-full flex items-center justify-center min-h-screen">
+    <div
+      className={`w-full flex items-center justify-center ${
+        height ? `h-${height}` : 'min-h-screen'
+      }`}
+    >
       <div role="status">
         <svg
           aria-hidden="true"

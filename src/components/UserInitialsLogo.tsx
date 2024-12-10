@@ -24,6 +24,7 @@ const UserInitialsLogo = ({
       {displayName
         .split(' ')
         .map((displayName: string) => displayName[0])
+        .slice(0, 2)
         .join('')
         .toUpperCase()}
     </p>

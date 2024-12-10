@@ -1,30 +1,40 @@
 'use client';
 
 import Image from 'next/image';
-import React, { FormEvent, useState } from 'react';
+import React from 'react';
 import Logo from '@/assets/logo/podcasts-logo.webp';
 import { doSignInWithEmailAndPassword } from '@/contexts/authContext/auth';
 import Link from 'next/link';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import {
+  defaultLoginUserInputData,
+  ILoginUserInputData,
+  loginUserSchema,
+} from '@/schemas/loginSchema';
+import LoadingComponent from '@/components/Loading';
+import Input from '@/components/Input';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [isSigningIn, setIsSigningIn] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
-
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!isSigningIn) {
-      setIsSigningIn(true);
-      try {
-        await doSignInWithEmailAndPassword(email, password);
-      } catch (error) {
-        setErrorMessage((error as Error).message);
-      } finally {
-        setIsSigningIn(false);
-      }
+  const onSubmit = async (data: ILoginUserInputData) => {
+    try {
+      await doSignInWithEmailAndPassword(data);
+    } catch (error) {
+      console.error(error);
     }
   };
+
+  const methods = useForm({
+    resolver: yupResolver(loginUserSchema),
+    shouldUnregister: false,
+    defaultValues: defaultLoginUserInputData,
+    mode: 'onBlur',
+  });
+
+  const {
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
 
   return (
     <div className="page__width flex flex-col items-center justify-center min-h-screen gap-14 px-4 py-10">
@@ -38,32 +48,43 @@ const LoginPage = () => {
         Podcasts Management Platform
       </h1>
       <div className="flex flex-col items-center gap-6">
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="Email"
-            className="login__input"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="Password"
-            className="login__input"
-          />
-          <button
-            type="submit"
-            disabled={isSigningIn}
-            className="login__submit"
+        <FormProvider {...methods}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-4"
           >
-            Sign In
-          </button>
-          {errorMessage && <p>{errorMessage}</p>}
-        </form>
+            <Controller
+              name="email"
+              render={({ field, fieldState: { isTouched, error } }) => (
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  errorMessage={isTouched && error ? error.message : ''}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                  name={field.name}
+                />
+              )}
+            />
+            <Controller
+              name="password"
+              render={({ field, fieldState: { isTouched, error } }) => (
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  errorMessage={isTouched && error ? error.message : ''}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                  name={field.name}
+                />
+              )}
+            />
+
+            <button type="submit" className="login__submit">
+              {isSubmitting ? <LoadingComponent height="full" /> : 'Sign in'}
+            </button>
+          </form>
+        </FormProvider>
         <div className="flex gap-1">
           <p>Don't have an account?</p>
           <Link href={'/register'} className="text-defaultBlue-400">
