@@ -1,33 +1,49 @@
 'use client';
 import DashboardNavigation from '@/components/DashboardNavigation';
 import DashboardTopBar from '@/components/DashboardTopBar';
-import { useAuth } from '@/contexts/authContext';
+import LoadingComponent from '@/components/Loading';
+import { auth } from '@/firebase/firebaseConfig';
 import { useRouter } from 'next/navigation';
-import React, { ReactNode, useEffect } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
-  const { userLoggedIn } = useAuth();
-
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    if (!userLoggedIn) {
-      router.replace('/login');
-    }
-  }, [userLoggedIn, router]);
+    const checkUserStatus = async () => {
+      try {
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+          if (!user) {
+            return router.push('/login');
+          }
+
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+
+    checkUserStatus();
+  }, []);
+
+  if (loading) {
+    return <LoadingComponent />;
+  }
   return (
     <>
-      <div className="hidden md:flex">
+      <div className="flex">
         <DashboardNavigation />
         <div className="flex flex-col w-full">
           <DashboardTopBar />
-          <div className="flex px-12 py-11 2xl:h-[calc(100vh-58px)]">
+          <div className="page__width w-full flex px-8 lg:px-12 py-11 2xl:h-[calc(100vh-58px)]">
             {children}
           </div>
         </div>
-      </div>
-      <div className="flex flex-col items-center justify-center min-h-screen md:hidden">
-        <p>Currently, the app is not designed for mobile devices.</p>
-        <p>Please open an app in a larger window.</p>
       </div>
     </>
   );

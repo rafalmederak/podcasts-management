@@ -16,7 +16,7 @@ import NavLink from './NavLink';
 
 const dashboardLink = '/dashboard';
 
-const dashboardNavLinks: NavItem[] = [
+export const dashboardNavLinks: NavItem[] = [
   {
     title: 'Home',
     icon: HomeIcon,
@@ -49,7 +49,7 @@ const dashboardNavLinks: NavItem[] = [
   },
 ];
 
-const dashboardSupportLinks = [
+export const dashboardSupportLinks = [
   {
     title: 'Settings',
     icon: Cog6ToothIcon,
@@ -65,7 +65,7 @@ const dashboardSupportLinks = [
 const DashboardNavigation = () => {
   const pathname = usePathname();
   return (
-    <div className="flex flex-col justify-between py-10 px-6 items-center w-52 min-h-screen border-gray-100 border-r-2">
+    <div className="hidden md:flex flex-col justify-between py-10 items-center min-w-52 h-screen sticky left-0 top-0 border-gray-100 border-r-2 overflow-y-auto ">
       <div className="flex flex-col items-center">
         <Image
           src={Logo}
