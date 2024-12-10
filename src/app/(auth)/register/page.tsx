@@ -14,8 +14,12 @@ import {
   registerUserSchema,
 } from '@/schemas/registerSchema';
 import Input from '@/components/Input';
+import { useAlert } from '@/contexts/alertContext';
+import { AuthErrorCodes } from 'firebase/auth';
+import { FirebaseError } from 'firebase/app';
 
 const RegisterPage = () => {
+  const { alert, handleAlert } = useAlert();
   const router = useRouter();
   const methods = useForm({
     resolver: yupResolver(registerUserSchema),
@@ -27,14 +31,33 @@ const RegisterPage = () => {
   const {
     handleSubmit,
     formState: { isSubmitting },
+    reset,
   } = methods;
 
   const onSubmit = async (data: IRegisterUserInputData) => {
     try {
       const newUser = await createUser(data);
+      handleAlert('success', 'Account has been created.');
+      reset();
       return router.push('/dashboard/home');
     } catch (error: any) {
       console.error(error);
+
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case AuthErrorCodes.EMAIL_EXISTS:
+            handleAlert('error', 'User with this email already exists.');
+            break;
+          case AuthErrorCodes.INVALID_EMAIL:
+            handleAlert('error', 'The email address is invalid.');
+            break;
+          default:
+            handleAlert('error', `An error occurred during registration.`);
+        }
+
+        return;
+      }
+      handleAlert('error', `An error occurred during registration.`);
     }
   };
 

@@ -14,13 +14,37 @@ import {
 } from '@/schemas/loginSchema';
 import LoadingComponent from '@/components/Loading';
 import Input from '@/components/Input';
+import { useAlert } from '@/contexts/alertContext';
+import { FirebaseError } from 'firebase/app';
+import { AuthErrorCodes } from 'firebase/auth';
 
 const LoginPage = () => {
+  const { alert, handleAlert } = useAlert();
   const onSubmit = async (data: ILoginUserInputData) => {
     try {
       await doSignInWithEmailAndPassword(data);
     } catch (error) {
       console.error(error);
+
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case AuthErrorCodes.INVALID_LOGIN_CREDENTIALS:
+            handleAlert('error', 'Invalid e-mail or password.');
+            break;
+          case AuthErrorCodes.TOO_MANY_ATTEMPTS_TRY_LATER:
+            handleAlert(
+              'error',
+              'Access to your account has been temporarily blocked due to unsuccessful login attempts, please try logging in again later.'
+            );
+            break;
+          default:
+            handleAlert('error', `An error occurred while logging in.`);
+        }
+
+        return;
+      }
+
+      handleAlert('error', `An error occurred while logging in.`);
     }
   };
 

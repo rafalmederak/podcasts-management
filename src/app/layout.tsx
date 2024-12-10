@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
+import { AlertProvider } from '@/contexts/alertContext';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -20,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={poppins.className}>{children}</body>
+      <AlertProvider>
+        <body className={poppins.className}>{children}</body>
+      </AlertProvider>
     </html>
   );
 }

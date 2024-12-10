@@ -3,9 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { auth } from '@/firebase/firebaseConfig';
 import { useRouter } from 'next/navigation';
 import LoadingComponent from '@/components/Loading';
+import { useAlert } from '@/contexts/alertContext';
+import Alert from '@/components/Alert';
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
+  const { alert } = useAlert();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +42,12 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
     return <div>{error}</div>;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {alert.display && <Alert type={alert.type} title={alert.message} />}
+    </>
+  );
 };
 
 export default AuthLayout;
