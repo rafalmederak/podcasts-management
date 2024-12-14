@@ -1,6 +1,5 @@
 import { auth, db } from '@/firebase/firebaseConfig';
 import { IRegisterUserInputData } from '@/schemas/registerSchema';
-import { ExtendedUser } from '@/types/user';
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -12,15 +11,16 @@ import {
   getDoc,
   getDocs,
   increment,
-  updateDoc,
+  setDoc,
 } from 'firebase/firestore';
+import { mutate } from 'swr';
 
 export async function getUserLevel(userId?: User['uid']): Promise<number> {
   try {
     if (!userId) {
       return 0;
     }
-    const userRef = doc(db, 'users', userId);
+    const userRef = doc(db, 'usersAttributes', userId);
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
@@ -40,23 +40,29 @@ export async function addTrophyLevelToUser(
   userId: User['uid'],
   trophyLevel: number
 ): Promise<void> {
-  const userRef = doc(db, 'users', userId);
+  const userRef = doc(db, 'usersAttributes', userId);
 
   try {
-    await updateDoc(userRef, {
-      level: increment(trophyLevel),
-    });
+    await setDoc(
+      userRef,
+      {
+        level: increment(trophyLevel),
+      },
+      { merge: true }
+    );
+
+    mutate(`userLevel_${userId}`);
   } catch (error) {
     console.error(error);
   }
 }
 
 export async function getUsers() {
-  const querySnapshot = await getDocs(collection(db, 'users'));
+  const querySnapshot = await getDocs(collection(db, 'usersAttributes'));
   return querySnapshot.docs.map((doc) => ({
     uid: doc.id,
     ...doc.data(),
-  })) as ExtendedUser[];
+  })) as User[];
 }
 
 export async function createUser(

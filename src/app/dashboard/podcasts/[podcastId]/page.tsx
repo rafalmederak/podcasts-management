@@ -15,11 +15,11 @@ import {
   TrophyIcon,
 } from '@heroicons/react/24/solid';
 import { getPodcastEpisodes } from '@/services/episodes.service';
-import { getPodcastRanking } from '@/services/trophies.service';
 import Link from 'next/link';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import UserInitialsLogo from '@/components/UserInitialsLogo';
 import { auth } from '@/firebase/firebaseConfig';
+import { getPodcastRanking } from '@/firebase/getUsers';
 
 const PodcastProfilePage = () => {
   const { currentUser } = auth;
@@ -45,9 +45,14 @@ const PodcastProfilePage = () => {
     () => getPodcastEpisodes(params.podcastId)
   );
 
+  const podcastId = params.podcastId;
+
   const { data: rankingData, isLoading: rankingIsLoading } = useSWR(
-    params.podcastId ? `ranking_${params.podcastId}` : null,
-    () => getPodcastRanking(params.podcastId)
+    `ranking_${podcastId}`,
+    async () => {
+      const userIdToken = await currentUser.getIdToken();
+      return getPodcastRanking({ podcastId, userIdToken });
+    }
   );
 
   const { data: podcastData, mutate } = useSWR(
@@ -164,16 +169,16 @@ const PodcastProfilePage = () => {
                   <p>Currently there is no ranking for this podcast.</p>
                 </div>
               ) : (
-                rankingData?.map((item, index) => (
+                rankingData?.map((item) => (
                   <div
-                    key={item.displayName}
+                    key={item.uid}
                     className={`flex h-12 border rounded p-4 items-center justify-between relative `}
                   >
-                    {item.userId == currentUser?.uid && (
+                    {item.uid == currentUser?.uid && (
                       <StarIcon className="absolute w-4 h-4 -top-2 -left-2 text-yellow-500" />
                     )}
                     <div className="flex items-center gap-x-2">
-                      <p className="min-w-4 text-left">{index + 1}</p>
+                      <p className="min-w-4 text-left">{item.rank}</p>
                       <div className="w-8 h-8 relative">
                         {item.photoURL ? (
                           <Image

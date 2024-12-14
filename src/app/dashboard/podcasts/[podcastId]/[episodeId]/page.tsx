@@ -67,7 +67,7 @@ const EpisodePage = () => {
   );
 
   const { data: userTrophiesData } = useSWR(
-    `userTrophies_${currentUser?.uid}`,
+    `userTrophies_${currentUser?.uid}_${params.episodeId}`,
     () => getEpisodeUserTrophies(params.episodeId, currentUser?.uid)
   );
 
