@@ -33,7 +33,15 @@ const PodcastsPage = () => {
 
   return (
     <div className="page__responsive">
-      <h2 className="page__title">Podcasts</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="page__title">Podcasts</h2>
+        <Link
+          href="/dashboard/podcasts/create-podcast"
+          className="text-sm bg-defaultBlue-300 text-white px-3 py-2 rounded-md shadow-md hover:scale-[1.025] transition-all"
+        >
+          + Create podcast
+        </Link>
+      </div>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="flex flex-wrap gap-12 w-full">
         {podcastsIsLoading || !podcastsData ? (

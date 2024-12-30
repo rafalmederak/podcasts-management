@@ -9,17 +9,13 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import Image from 'next/image';
-import {
-  CheckCircleIcon,
-  StarIcon,
-  TrophyIcon,
-} from '@heroicons/react/24/solid';
+import { StarIcon, TrophyIcon } from '@heroicons/react/24/solid';
 import { getPodcastEpisodes } from '@/services/episodes.service';
 import Link from 'next/link';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import UserInitialsLogo from '@/components/UserInitialsLogo';
 import { auth } from '@/firebase/firebaseConfig';
 import { getPodcastRanking } from '@/firebase/getUsers';
+import Podcast from '@/components/Podcast';
 
 const PodcastProfilePage = () => {
   const { currentUser } = auth;
@@ -89,39 +85,14 @@ const PodcastProfilePage = () => {
       </div>
       <div className="flex gap-8 2xl:gap-6 flex-wrap">
         <div className="flex flex-col xl:flex-row 2xl:w-2/3 w-full gap-8 2xl:gap-6 ">
-          <div className="flex flex-col flex-1 w-full xl:1/2 lg:max-h-[calc(100vh-254px)] 2xl:h-[calc(100vh-254px)] lg:overflow-y-auto 2xl:pb-4 md:px-4">
-            <div className="flex flex-col items-start gap-3">
-              <div className="w-full h-80 relative">
-                <Image
-                  src={podcastData.photo}
-                  alt="Demo photo"
-                  fill={true}
-                  className="rounded-lg shadow-md object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <button
-                onClick={
-                  isPodcastSubscribed ? handleUnsubscribe : handleSubscribe
-                }
-                className="flex items-center cursor-pointer rounded-md hover:bg-gray-100 transition-all pl-1 py-1 pr-2"
-              >
-                {isPodcastSubscribed ? (
-                  <CheckCircleIcon className="w-5 h-5 text-defaultBlue-300" />
-                ) : (
-                  <PlusCircleIcon className="w-5 h-5" />
-                )}
-                <p className="ml-1 ">
-                  {isPodcastSubscribed ? 'Subscribed' : 'Subscribe'}
-                </p>
-              </button>
-
-              <div className="flex flex-col gap-2">
-                <h2 className="text-lg font-medium">About</h2>
-                <p>{podcastData.description}</p>
-              </div>
-            </div>
-          </div>
+          <Podcast
+            isPodcastSubscribed={isPodcastSubscribed}
+            handleUnsubscribe={handleUnsubscribe}
+            handleSubscribe={handleSubscribe}
+            photo={podcastData.photo}
+            description={podcastData.description}
+            subscribeButton={true}
+          />
           <div className="flex flex-col xl:flex-1 w-full 2xl:pb-4 xl:1/2">
             <h2 className="text-lg font-medium md:px-4">Episodes</h2>
             <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-290px)] 2xl:h-[calc(100vh-290px)] lg:overflow-y-auto md:px-4 pt-2">

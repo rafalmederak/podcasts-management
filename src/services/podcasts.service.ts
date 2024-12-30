@@ -115,3 +115,23 @@ export async function getUserSubscriptionsCount(
   const countSnapshot = await getCountFromServer(subscriptionsQuery);
   return countSnapshot.data().count;
 }
+
+export async function addPodcast(
+  podcastId: string,
+  userId: string,
+  photo: string,
+  title: string,
+  host: string,
+  description: string
+) {
+  const podcastRef = doc(db, 'podcasts', podcastId);
+
+  await setDoc(podcastRef, {
+    userId,
+    photo,
+    title,
+    host,
+    description,
+    createdAt: Timestamp.now(),
+  });
+}
