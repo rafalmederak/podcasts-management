@@ -1,4 +1,4 @@
-export type Episode = {
+export type EpisodeType = {
   id: string;
   podcastId: string;
   title: string;
@@ -6,7 +6,7 @@ export type Episode = {
   description: string;
   longDescription: string;
   photo: string;
-  audioURL: string;
+  audioURL: string | ArrayBuffer | null;
   spotifyURL?: string;
   applePodcastsURL?: string;
   ytMusicURL?: string;

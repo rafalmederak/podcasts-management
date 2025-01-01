@@ -43,7 +43,7 @@ const PodcastsPage = () => {
         </Link>
       </div>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <div className="flex flex-wrap gap-12 w-full">
+      <div className="flex flex-wrap gap-12 w-full overflow-y-auto">
         {podcastsIsLoading || !podcastsData ? (
           <p>Loading podcasts...</p>
         ) : filteredData.length === 0 ? (

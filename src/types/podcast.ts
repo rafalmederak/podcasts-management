@@ -1,4 +1,5 @@
 export type Podcast = {
+  userId: string;
   id: string;
   title: string;
   description: string;

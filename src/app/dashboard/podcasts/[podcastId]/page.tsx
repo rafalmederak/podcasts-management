@@ -94,7 +94,17 @@ const PodcastProfilePage = () => {
             subscribeButton={true}
           />
           <div className="flex flex-col xl:flex-1 w-full 2xl:pb-4 xl:1/2">
-            <h2 className="text-lg font-medium md:px-4">Episodes</h2>
+            <div className="flex justify-between md:px-4">
+              <h2 className="text-lg font-medium">Episodes</h2>
+              {podcastData.userId === currentUser.uid && (
+                <Link
+                  href={`/dashboard/podcasts/${podcastId}/add-episode`}
+                  className="text-sm bg-defaultBlue-300 text-white px-3 py-2 rounded-md shadow-md hover:scale-[1.025] transition-all"
+                >
+                  + Add episode
+                </Link>
+              )}
+            </div>
             <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-290px)] 2xl:h-[calc(100vh-290px)] lg:overflow-y-auto md:px-4 pt-2">
               <div className="flex flex-col w-full gap-4 my-1">
                 {episodesIsLoading || !episodesData ? (
