@@ -1,5 +1,5 @@
 import { db } from '@/firebase/firebaseConfig';
-import { Episode } from '@/types/episode';
+import { EpisodeType } from '@/types/episode';
 import { User } from 'firebase/auth';
 import {
   collection,
@@ -24,25 +24,31 @@ export async function getPodcastEpisodes(podcastId: string) {
 
   const querySnapshot = await getDocs(q);
 
-  return querySnapshot.docs.map((doc) => ({
+  const episodes = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as Episode[];
+  })) as EpisodeType[];
+
+  episodes.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  return episodes;
 }
 
-export async function getEpisode(episodeId: Episode['id']) {
+export async function getEpisode(episodeId: EpisodeType['id']) {
   const episodeRef = doc(db, 'episodes', episodeId);
   const episodeData = await getDoc(episodeRef);
 
   if (episodeData.exists()) {
-    return { id: episodeData.id, ...episodeData.data() } as Episode;
+    return { id: episodeData.id, ...episodeData.data() } as EpisodeType;
   } else {
     throw new Error(`Episode with id ${episodeId} not found`);
   }
 }
 
 export async function addLikeToEpisode(
-  episodeId: Episode['id'],
+  episodeId: EpisodeType['id'],
   userId: User['uid']
 ) {
   const likeId = `${userId}_${episodeId}`;
@@ -56,7 +62,7 @@ export async function addLikeToEpisode(
 }
 
 export async function removeLikeFromEpisode(
-  episodeId: Episode['id'],
+  episodeId: EpisodeType['id'],
   userId: User['uid']
 ) {
   const likeId = `${userId}_${episodeId}`;
@@ -66,7 +72,7 @@ export async function removeLikeFromEpisode(
 }
 
 export async function getEpisodeUserLike(
-  episodeId: Episode['id'],
+  episodeId: EpisodeType['id'],
   userId: User['uid']
 ) {
   const likeDocRef = doc(db, 'episodeLikes', `${userId}_${episodeId}`);
@@ -101,7 +107,7 @@ export async function getUserLikedEpisodes(
 
   const episodes = await Promise.all(
     episodesSnapshot.docs.map(async (doc) => {
-      const episodeData = doc.data() as Episode;
+      const episodeData = doc.data() as EpisodeType;
       const podcastId = episodeData.podcastId;
       const podcast = await getPodcast(podcastId);
 
@@ -124,4 +130,34 @@ export async function getUserLikedCount(userId: User['uid']): Promise<number> {
 
   const countSnapshot = await getCountFromServer(likedQuery);
   return countSnapshot.data().count;
+}
+
+export async function addEpisode(
+  episodeId: string,
+  podcastId: string,
+  title: string,
+  date: string,
+  description: string,
+  longDescription: string,
+  photo: string,
+  audioURL: string | ArrayBuffer | null,
+  spotifyURL?: string,
+  applePodcastsURL?: string,
+  ytMusicURL?: string
+) {
+  const episodeRef = doc(db, 'episodes', episodeId);
+
+  await setDoc(episodeRef, {
+    podcastId,
+    title,
+    date,
+    description,
+    longDescription,
+    photo,
+    audioURL,
+    spotifyURL,
+    applePodcastsURL,
+    ytMusicURL,
+    createdAt: Timestamp.now(),
+  });
 }

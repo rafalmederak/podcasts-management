@@ -1,14 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { FormEvent, useState } from 'react';
 import { useParams } from 'next/navigation';
 import useSWR from 'swr';
 import Episode from '@/components/Episode';
 import { getPodcast } from '@/services/podcasts.service';
 import { v4 as uuidv4 } from 'uuid';
 import { EpisodeType } from '@/types/episode';
+import { auth } from '@/firebase/firebaseConfig';
+import { useRouter } from 'next/navigation';
+import { addEpisode } from '@/services/episodes.service';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import LoadingComponent from '@/components/Loading';
 
 const AddEpisode = () => {
+  const { currentUser } = auth;
+  const router = useRouter();
+
   const [photoURL, setPhotoURL] = useState<string>('');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
@@ -20,6 +28,8 @@ const AddEpisode = () => {
   const [audioURL, setAudioURL] = useState<string | ArrayBuffer | null>('');
   const params = useParams<{ podcastId: string }>();
   const episodeId = uuidv4();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const { data: podcastData } = useSWR(`${params.podcastId}`, getPodcast, {
     suspense: true,
@@ -63,6 +73,75 @@ const AddEpisode = () => {
     podcastId: params.podcastId,
   };
 
+  async function uploadFile(file: File, path: string) {
+    const storage = getStorage();
+    const fileRef = ref(storage, path);
+    await uploadBytes(fileRef, file);
+    return getDownloadURL(fileRef);
+  }
+
+  const createEpisode = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    setIsLoading(true);
+    try {
+      const photoFile = (
+        document.querySelector(
+          'input[type="file"][accept="image/*"]'
+        ) as HTMLInputElement
+      )?.files?.[0];
+
+      const photoURL = photoFile
+        ? await uploadFile(
+            photoFile,
+            `podcasts/${params.podcastId}/episodes/${episodeId}/photo`
+          )
+        : '';
+
+      const audioFile = (
+        document.querySelector(
+          'input[type="file"][accept="audio/*"]'
+        ) as HTMLInputElement
+      )?.files?.[0];
+
+      const audioURL = audioFile
+        ? await uploadFile(
+            audioFile,
+            `podcasts/${params.podcastId}/episodes/${episodeId}/audio`
+          )
+        : '';
+
+      await addEpisode(
+        episodeId,
+        params.podcastId,
+        title,
+        date,
+        description,
+        longDescription,
+        photoURL,
+        audioURL,
+        spotifyURL,
+        applePodcastsURL,
+        ytMusicURL
+      );
+
+      setPhotoURL('');
+      setTitle('');
+      setDate('');
+      setDescription('');
+      setLongDescription('');
+      setSpotifyURL('');
+      setApplePodcastsURL('');
+      setYtMusicURL('');
+      setAudioURL('');
+      router.push(`/dashboard/podcasts/${params.podcastId}/${episodeId}`);
+    } catch (error) {
+      console.error('Error creating episode:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="page__responsive">
       <div className="flex flex-col gap-2">
@@ -73,7 +152,10 @@ const AddEpisode = () => {
       </div>
       <div className="flex w-full gap-20  h-[78vh]">
         <div className="flex flex-col gap-6 w-3/5">
-          <form className="flex flex-col h-full items-end gap-4">
+          <form
+            onSubmit={createEpisode}
+            className="flex flex-col h-full items-end gap-4"
+          >
             <input
               type="text"
               value={title}
@@ -150,9 +232,9 @@ const AddEpisode = () => {
             />
             <button
               type="submit"
-              className="border border-defaultBlue-300 rounded-sm bg-defaultBlue-300 text-white px-4 py-2 hover:bg-white hover:text-defaultBlue-300 transition-all  "
+              className="w-40 border border-defaultBlue-300 rounded-sm bg-defaultBlue-300 text-white px-4 py-2 hover:bg-white hover:text-defaultBlue-300 transition-all  "
             >
-              Add episode
+              {isLoading ? <LoadingComponent height="full" /> : 'Add episode'}
             </button>
           </form>
         </div>
