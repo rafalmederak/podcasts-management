@@ -10,8 +10,9 @@ export type Trophy = {
   task: {
     question: string;
     type: string;
-    radioOptions: [];
+    radioOptions: string[];
   };
+  goodAnswerIndex?: number;
 };
 
 export type UserTrophy = {

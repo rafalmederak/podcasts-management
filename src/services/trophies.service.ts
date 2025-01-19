@@ -122,3 +122,28 @@ export async function getUserTrophies(userId: User['uid']) {
 
   return trophies;
 }
+
+export async function addTrophy({
+  id: trophyId,
+  episodeId,
+  title,
+  photo,
+  description,
+  level,
+  task,
+  goodAnswerIndex,
+}: Trophy) {
+  const trophyRef = doc(db, 'trophies', trophyId);
+
+  await setDoc(trophyRef, {
+    trophyId,
+    episodeId,
+    title,
+    photo,
+    description,
+    level,
+    task,
+    goodAnswerIndex,
+    createdAt: Timestamp.now(),
+  });
+}

@@ -165,13 +165,13 @@ const Episode = ({
           </div>
           <div className="flex flex-col items-start justify-between">
             <div className="flex flex-col gap-2 mt-4 md:mt-0 md:ml-5 p-1">
-              {!creation ? (
+              {title ? (
                 <h3 className="page__title">{title}</h3>
               ) : (
                 <i className="page__title">Episode Title</i>
               )}
               <p className="text-md text-defaultBlue-300">
-                {!creation ? date : <i>dd/mm/yyyy</i>}
+                {date ? date : <i>dd/mm/yyyy</i>}
               </p>
               <div className="flex items-center">
                 <ClockIcon className="w-4 h-4" />
@@ -201,7 +201,7 @@ const Episode = ({
             )}
           </div>
         </div>
-        <p>{!creation ? description : <i>Episode description</i>}</p>
+        <p>{description ? description : <i>Episode description</i>}</p>
         <div className="flex flex-col lg:flex-row gap-2">
           <div className="flex items-start ">
             <button onClick={togglePlay}>
@@ -282,7 +282,7 @@ const Episode = ({
           </div>
         </div>
         <div className="whitespace-pre-line leading-normal">
-          {!creation ? (
+          {!creation && formattedEpisodeDescription ? (
             formattedEpisodeDescription
           ) : (
             <i>Episode long description</i>

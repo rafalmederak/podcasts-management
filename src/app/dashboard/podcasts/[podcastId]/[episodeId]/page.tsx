@@ -16,7 +16,7 @@ import {
 
 //components
 import Episode from '@/components/Episode';
-import TrophyDetail from '@/components/TrophyDetail';
+import TrophyDetail from '@/components/trophy/TrophyDetail';
 
 //types
 import { Trophy, UserTrophy } from '@/types/trophy';
@@ -127,8 +127,18 @@ const EpisodePage = () => {
           setIsEpisodeLiked={setIsEpisodeLiked}
         />
         <div className="flex w-full 2xl:w-2/5 flex-col">
-          <h2 className="text-lg font-bold md:px-4">Episode Tasks</h2>
-          <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] lg:overflow-y-auto md:px-4 pt-2">
+          <div className="flex justify-between items-center md:px-4">
+            <h2 className="text-lg font-bold">Episode Tasks</h2>
+            {podcastData.userId === currentUser.uid && (
+              <Link
+                href={`/dashboard/podcasts/${params.podcastId}/${episodeData.id}/add-trophy`}
+                className="text-sm bg-defaultBlue-300 text-white px-3 py-2 rounded-md shadow-md hover:scale-[1.025] transition-all"
+              >
+                + Add Trophy
+              </Link>
+            )}
+          </div>
+          <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] lg:overflow-y-auto md:px-4 pt-2 mt-2">
             <div className="flex flex-col w-full gap-4 my-1 relative">
               {trophiesData?.length == 0 && (
                 <p>Currently there are no trophies for this episode.</p>

@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { addEpisode } from '@/services/episodes.service';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import LoadingComponent from '@/components/Loading';
+import { handlePhotoChange } from '@/utils/photoChange';
 
 const AddEpisode = () => {
   const { currentUser } = auth;
@@ -34,19 +35,6 @@ const AddEpisode = () => {
   const { data: podcastData } = useSWR(`${params.podcastId}`, getPodcast, {
     suspense: true,
   });
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        if (fileReader.result) {
-          setPhotoURL(fileReader.result as string);
-        }
-      };
-      fileReader.readAsDataURL(file);
-    }
-  };
 
   const handleAudioFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -171,7 +159,7 @@ const AddEpisode = () => {
               <input
                 type="file"
                 accept="image/*"
-                onChange={handlePhotoChange}
+                onChange={(e) => handlePhotoChange(e, setPhotoURL)}
                 required
               />
             </div>
