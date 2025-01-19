@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { addEpisode } from '@/services/episodes.service';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import LoadingComponent from '@/components/Loading';
-import { handlePhotoChange } from '@/utils/photoChange';
+import { handlePhotoChange, uploadFile } from '@/utils/photoChange';
 
 const AddEpisode = () => {
   const { currentUser } = auth;
@@ -60,13 +60,6 @@ const AddEpisode = () => {
     id: episodeId,
     podcastId: params.podcastId,
   };
-
-  async function uploadFile(file: File, path: string) {
-    const storage = getStorage();
-    const fileRef = ref(storage, path);
-    await uploadBytes(fileRef, file);
-    return getDownloadURL(fileRef);
-  }
 
   const createEpisode = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

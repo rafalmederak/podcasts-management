@@ -1,8 +1,10 @@
 'use client';
 
+import LoadingComponent from '@/components/Loading';
 import Podcast from '@/components/Podcast';
 import { auth } from '@/firebase/firebaseConfig';
 import { addPodcast } from '@/services/podcasts.service';
+import { handlePhotoChange, uploadFile } from '@/utils/photoChange';
 import { useRouter } from 'next/navigation';
 import React, { FormEvent, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
@@ -10,31 +12,45 @@ import { v4 as uuidv4 } from 'uuid';
 const CreatePodcast = () => {
   const { currentUser } = auth;
   const router = useRouter();
-  const [photo, setPhoto] = useState('');
   const [title, setTitle] = useState('');
   const [host, setHost] = useState('');
   const [description, setDescription] = useState('');
+  const [photoURL, setPhotoURL] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const createPodcast = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (currentUser) {
+      setIsLoading(true);
       try {
         const podcastId = uuidv4();
+        const photoFile = (
+          document.querySelector(
+            'input[type="file"][accept="image/*"]'
+          ) as HTMLInputElement
+        )?.files?.[0];
+
+        const photoURL = photoFile
+          ? await uploadFile(photoFile, `podcasts/${podcastId}/photo`)
+          : '';
         await addPodcast(
           podcastId,
           currentUser.uid,
-          photo,
+          photoURL,
           title,
           host,
           description
         );
-        setPhoto('');
+
+        setPhotoURL('');
         setTitle('');
         setHost('');
         setDescription('');
         return router.push(`/dashboard/podcasts/${podcastId}`);
       } catch (error) {
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -65,14 +81,17 @@ const CreatePodcast = () => {
               required
               className="rounded-sm border border-1 p-2 w-full"
             />
-            <input
-              type="text"
-              value={photo}
-              onChange={(e) => setPhoto(e.target.value)}
-              placeholder="Photo URL"
-              required
-              className="rounded-sm border border-1 p-2 w-full"
-            />
+            <div className="flex w-full items-center rounded-sm border border-1 p-2">
+              <label htmlFor="audio-file" className="text-gray-400 mr-2">
+                Photo file
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handlePhotoChange(e, setPhotoURL)}
+                required
+              />
+            </div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -82,9 +101,13 @@ const CreatePodcast = () => {
             />
             <button
               type="submit"
-              className="border border-defaultBlue-300 rounded-sm bg-defaultBlue-300 text-white px-4 py-2 hover:bg-white hover:text-defaultBlue-300 transition-all  "
+              className="w-40 border border-defaultBlue-300 rounded-sm bg-defaultBlue-300 text-white px-4 py-2 hover:bg-white hover:text-defaultBlue-300 transition-all  "
             >
-              Create podcast
+              {isLoading ? (
+                <LoadingComponent height="full" />
+              ) : (
+                'Create podcast'
+              )}
             </button>
           </form>
         </div>
@@ -97,7 +120,7 @@ const CreatePodcast = () => {
               {host ? <p>{host}</p> : <i>Podcast host</i>}
             </h2>
           </div>
-          <Podcast photo={photo} description={description} creation={true} />
+          <Podcast photo={photoURL} description={description} creation={true} />
         </div>
       </div>
     </div>

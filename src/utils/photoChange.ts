@@ -1,3 +1,5 @@
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
+
 export const handlePhotoChange = (
   e: React.ChangeEvent<HTMLInputElement>,
   setPhotoURL: React.Dispatch<React.SetStateAction<string>>
@@ -13,3 +15,10 @@ export const handlePhotoChange = (
     fileReader.readAsDataURL(file);
   }
 };
+
+export async function uploadFile(file: File, path: string) {
+  const storage = getStorage();
+  const fileRef = ref(storage, path);
+  await uploadBytes(fileRef, file);
+  return getDownloadURL(fileRef);
+}

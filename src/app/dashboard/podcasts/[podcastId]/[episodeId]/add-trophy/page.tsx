@@ -3,7 +3,7 @@
 import TrophyComponent from '@/components/trophy/TrophyQuestionSection';
 import TrophyMain from '@/components/trophy/TrophyBody';
 import { getEpisode } from '@/services/episodes.service';
-import { handlePhotoChange } from '@/utils/photoChange';
+import { handlePhotoChange, uploadFile } from '@/utils/photoChange';
 import { useParams, useRouter } from 'next/navigation';
 import React, { FormEvent, useState } from 'react';
 import useSWR from 'swr';
@@ -74,13 +74,6 @@ const AddTrophy = () => {
     setGoodAnswerIndex(index);
   };
 
-  async function uploadFile(file: File, path: string) {
-    const storage = getStorage();
-    const fileRef = ref(storage, path);
-    await uploadBytes(fileRef, file);
-    return getDownloadURL(fileRef);
-  }
-
   const createTrophy = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -106,7 +99,7 @@ const AddTrophy = () => {
       const photoURL = photoFile
         ? await uploadFile(
             photoFile,
-            `podcasts/${params.podcastId}/episodes/${params.episodeId}/trophies/${trophyId}`
+            `podcasts/${params.podcastId}/episodes/${params.episodeId}/trophies/${trophyId}/photo`
           )
         : '';
 
