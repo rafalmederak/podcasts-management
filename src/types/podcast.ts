@@ -5,5 +5,4 @@ export type Podcast = {
   description: string;
   host: string;
   photo: string;
-  totalTrophies: number;
 };

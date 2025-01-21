@@ -189,6 +189,7 @@ const AddEpisode = () => {
               onChange={(e) => setLongDescription(e.target.value)}
               placeholder="Long Description"
               className="rounded-sm border border-1 p-2 w-full h-full resize-none"
+              required
             />
             <input
               type="text"
