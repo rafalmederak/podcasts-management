@@ -53,7 +53,7 @@ const PodcastsPage = () => {
             <Link
               key={item.id}
               href={`/dashboard/podcasts/${item.id}`}
-              className="flex flex-col items-start justify-start w-full sm:w-96 hover:scale-105 cursor-pointer transition-all"
+              className="flex flex-col items-start justify-start w-full sm:w-96 hover:scale-95 cursor-pointer transition-all"
             >
               <div className="w-full h-72 relative">
                 <Image

@@ -282,7 +282,7 @@ const Episode = ({
           </div>
         </div>
         <div className="whitespace-pre-line leading-normal">
-          {!creation && formattedEpisodeDescription ? (
+          {longDescription ? (
             formattedEpisodeDescription
           ) : (
             <i>Episode long description</i>
