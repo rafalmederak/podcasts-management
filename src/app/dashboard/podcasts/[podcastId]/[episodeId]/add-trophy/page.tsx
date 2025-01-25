@@ -3,99 +3,77 @@
 import TrophyComponent from '@/components/trophy/TrophyQuestionSection';
 import TrophyMain from '@/components/trophy/TrophyBody';
 import { getEpisode } from '@/services/episodes.service';
-import { handlePhotoChange, uploadFile } from '@/utils/photoChange';
+import { uploadFile } from '@/utils/photoChange';
 import { useParams, useRouter } from 'next/navigation';
-import React, { FormEvent, useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import { v4 as uuidv4 } from 'uuid';
 import LoadingComponent from '@/components/Loading';
-import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { auth } from '@/firebase/firebaseConfig';
 import { addTrophy } from '@/services/trophies.service';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Trophy } from '@/types/trophy';
+import FormInput from '@/components/FormInput';
+import Textarea from '@/components/Textarea';
+import { trophySchema } from '@/schemas/trophySchema';
+import { TrashIcon } from '@heroicons/react/24/solid';
+
+type TrophyFormData = {
+  title: string;
+  photo?: File;
+  description: string;
+  level: number;
+  task: {
+    question: string;
+    type: 'radio';
+    radioOptions: string[];
+  };
+  goodAnswerIndex: number;
+};
 
 const AddTrophy = () => {
   const { currentUser } = auth;
   const router = useRouter();
-
   const params = useParams<{ podcastId: string; episodeId: string }>();
-
-  const [photoURL, setPhotoURL] = useState<string>('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [level, setLevel] = useState(1);
-  const [taskQuestion, setTaskQuestion] = useState('');
-  const [taskRadioOptions, setTaskRadioOptions] = useState<string[]>([]);
-  const [goodAnswerIndex, setGoodAnswerIndex] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [inputValue, setInputValue] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-
   const { data: episodeData } = useSWR(`${params.episodeId}`, () =>
     getEpisode(params.episodeId)
   );
 
   const trophyId = uuidv4();
+  const [photoURL, setPhotoURL] = useState<string>('');
+  const [goodAnswerIndex, setGoodAnswerIndex] = useState<number | null>(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const trophy = {
-    id: trophyId,
-    episodeId: params.episodeId,
-    title,
-    photo: photoURL,
-    description,
-    level,
-    task: {
-      type: 'radio',
-      question: taskQuestion,
-      radioOptions: taskRadioOptions,
+  const methods = useForm({
+    resolver: yupResolver(trophySchema),
+    mode: 'onBlur',
+    defaultValues: {
+      title: '',
+      photo: undefined,
+      description: '',
+      level: 1,
+      task: {
+        question: '',
+        type: 'radio',
+        radioOptions: [''],
+      },
+      goodAnswerIndex: 0,
     },
-  };
+  });
 
-  //functions
-  const handleAddOption = () => {
-    if (inputValue.trim() === '') {
-      setError('Option cannot be empty.');
-      return;
-    }
-    setTaskRadioOptions([...taskRadioOptions, inputValue.trim()]);
-    setInputValue('');
-    setError(null);
-  };
+  const {
+    handleSubmit,
+    control,
+    formState: { isSubmitting },
+    setValue,
+  } = methods;
 
-  const handleRemoveOption = (index: number) => {
-    setTaskRadioOptions(taskRadioOptions.filter((_, i) => i !== index));
-    if (goodAnswerIndex === index) {
-      setGoodAnswerIndex(null);
-    } else if (goodAnswerIndex !== null && goodAnswerIndex > index) {
-      setGoodAnswerIndex(goodAnswerIndex - 1);
-    }
-  };
-
-  const handleSetGoodAnswer = (index: number) => {
-    setGoodAnswerIndex(index);
-  };
-
-  const createTrophy = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (taskRadioOptions.length < 2) {
-      setError('You must add at least two options.');
-      return;
-    }
-    if (goodAnswerIndex === null) {
-      setError('You must select a good answer.');
-      return;
-    }
-    setError(null);
-
+  const createTrophy = async (data: TrophyFormData) => {
     if (!currentUser) return;
     setIsLoading(true);
     try {
-      const photoFile = (
-        document.querySelector(
-          'input[type="file"][accept="image/*"]'
-        ) as HTMLInputElement
-      )?.files?.[0];
-
+      const photoFile = data.photo;
       const photoURL = photoFile
         ? await uploadFile(
             photoFile,
@@ -104,29 +82,24 @@ const AddTrophy = () => {
         : '';
 
       const task = {
-        question: taskQuestion,
+        question: data.task.question,
         type: 'radio',
-        radioOptions: taskRadioOptions,
+        radioOptions: data.task.radioOptions,
       };
 
       await addTrophy({
         id: trophyId,
         episodeId: params.episodeId,
-        title,
+        title: data.title,
         photo: photoURL,
-        description,
-        level,
+        description: data.description,
+        level: data.level,
         task,
-        goodAnswerIndex,
+        goodAnswerIndex: data.goodAnswerIndex,
       });
 
       setPhotoURL('');
-      setTitle('');
-      setDescription('');
-      setLevel(1);
-      setTaskQuestion('');
-      setTaskRadioOptions([]);
-      setGoodAnswerIndex(null);
+      methods.reset();
       router.push(
         `/dashboard/podcasts/${params.podcastId}/${params.episodeId}`
       );
@@ -135,6 +108,51 @@ const AddTrophy = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAddOption = () => {
+    const options = methods.getValues('task.radioOptions');
+    if (options) {
+      setValue('task.radioOptions', [...options, '']);
+    }
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const options = methods.getValues('task.radioOptions');
+    if (options) {
+      const updatedOptions = options.filter((_, i) => i !== index);
+
+      if (updatedOptions.length === 0) {
+        updatedOptions.push('');
+      }
+
+      setValue('task.radioOptions', updatedOptions);
+
+      if (goodAnswerIndex === index) {
+        setGoodAnswerIndex(0);
+      } else if (goodAnswerIndex !== null && goodAnswerIndex > index) {
+        setGoodAnswerIndex(goodAnswerIndex - 1);
+      }
+    }
+  };
+
+  const handleSetGoodAnswer = (index: number) => {
+    setGoodAnswerIndex(index);
+    setValue('goodAnswerIndex', index);
+  };
+
+  const trophy: Trophy = {
+    id: trophyId,
+    episodeId: params.episodeId,
+    title: methods.watch('title'),
+    photo: photoURL,
+    description: methods.watch('description'),
+    level: methods.watch('level'),
+    task: {
+      type: 'radio',
+      question: methods.watch('task.question'),
+      radioOptions: methods.watch('task.radioOptions'),
+    },
   };
 
   return (
@@ -146,104 +164,182 @@ const AddTrophy = () => {
         </h3>
       </div>
       <div className="flex gap-20">
-        <form onSubmit={createTrophy} className="flex flex-col w-2/3 gap-4">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            required
-            className="rounded-sm border border-1 p-2 w-full"
-          />
-          <div className="flex w-full items-center rounded-sm border border-1 p-2">
-            <label htmlFor="audio-file" className="text-gray-400 mr-2">
-              Photo file
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handlePhotoChange(e, setPhotoURL)}
-              required
-            />
-          </div>
-          <input
-            type="number"
-            min={1}
-            max={3}
-            value={level}
-            onChange={(e) => setLevel(Number(e.target.value))}
-            placeholder="Level"
-            required
-            className="rounded-sm border border-1 p-2 w-full h-10 resize-none"
-          />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Description"
-            required
-            className="rounded-sm border border-1 p-2 w-full h-full resize-none"
-          />
-
-          <span className="bg-gray-200 w-full h-[3px]"></span>
-          <input
-            type="text"
-            value={taskQuestion}
-            onChange={(e) => setTaskQuestion(e.target.value)}
-            placeholder="Task Question"
-            required
-            className="rounded-sm border border-1 p-2 w-full"
-          />
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Enter an option"
-              className="rounded-sm border border-1 p-2 w-full"
-            />
-            <input
-              value={'Add option'}
-              type="button"
-              onClick={handleAddOption}
-              className="min-w-40 rounded-sm border border-1 p-2 cursor-pointer"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-40 border border-defaultBlue-300 rounded-sm bg-defaultBlue-300 text-white px-4 py-2 hover:bg-white hover:text-defaultBlue-300 transition-all  "
+        <FormProvider {...methods}>
+          <form
+            onSubmit={handleSubmit(createTrophy)}
+            className="flex flex-col w-2/3 gap-4"
           >
-            {isLoading ? <LoadingComponent height="full" /> : 'Add trophy'}
-          </button>
-          {error && <p className="text-red-500">{error}</p>}
-        </form>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <FormInput
+                  {...field}
+                  type="text"
+                  placeholder="Title"
+                  errorMessage={error?.message}
+                />
+              )}
+            />
+            <Controller
+              name="photo"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <div className="flex flex-col w-full">
+                  <div className="flex w-full items-center rounded-sm border border-1 p-2">
+                    <label htmlFor="photo-file" className="text-gray-400 mr-2">
+                      Photo file
+                    </label>
+                    <input
+                      id="photo-file"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files ? e.target.files[0] : null;
+                        if (file) {
+                          setPhotoURL(URL.createObjectURL(file));
+                          field.onChange(file);
+                        }
+                      }}
+                    />
+                  </div>
+                  {error && (
+                    <p className="text-red-500 text-sm font-medium my-1.5">
+                      {error.message}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+            <Controller
+              name="level"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <FormInput
+                  {...field}
+                  type="number"
+                  placeholder="Level"
+                  min="1"
+                  max="3"
+                  step="1"
+                  onChange={(e) => {
+                    const newValue = Math.max(
+                      1,
+                      Math.min(3, Number(e.target.value))
+                    );
+                    field.onChange(newValue);
+                  }}
+                  value={field.value}
+                  errorMessage={error?.message}
+                />
+              )}
+            />
+            <Controller
+              name="description"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <Textarea
+                  {...field}
+                  placeholder="Description"
+                  errorMessage={error?.message}
+                />
+              )}
+            />
+
+            <span className="bg-gray-200 w-full h-[3px]"></span>
+            <Controller
+              name="task.question"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <FormInput
+                  {...field}
+                  type="text"
+                  placeholder="Task Question"
+                  className="rounded-sm border border-1 p-2 w-full"
+                  errorMessage={error?.message}
+                />
+              )}
+            />
+            <div className="flex gap-4">
+              <Controller
+                name="task.radioOptions"
+                control={control}
+                render={({ field, fieldState: { error } }) => (
+                  <div className="w-full flex flex-col gap-4">
+                    {field.value?.map((option, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between gap-4 w-full"
+                      >
+                        <FormInput
+                          {...field}
+                          type="text"
+                          value={option}
+                          placeholder="Enter an option"
+                          onChange={(e) => {
+                            const updatedOptions = [...field.value];
+                            updatedOptions[index] = e.target.value;
+                            field.onChange(updatedOptions);
+                          }}
+                          className="rounded-sm border border-1 p-2 w-full"
+                          errorMessage={error?.message}
+                        />
+                        {field.value.length > 1 && (
+                          <div className="flex gap-2 items-start h-full">
+                            <button
+                              type="button"
+                              onClick={() => handleSetGoodAnswer(index)}
+                              className={`${
+                                goodAnswerIndex === index
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-white'
+                              } rounded-sm border border-1 p-2 w-60`}
+                            >
+                              {goodAnswerIndex === index
+                                ? 'Good Answer'
+                                : 'Set Good Answer'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveOption(index)}
+                              className="bg-red-500 flex items-center justify-center rounded-sm border border-1 p-2 w-12 text-white"
+                            >
+                              <TrashIcon className="w-4 h-6" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={handleAddOption}
+                      className="min-w-40 rounded-sm border border-1 p-2 cursor-pointer"
+                    >
+                      Add Option
+                    </button>
+                  </div>
+                )}
+              />
+            </div>
+
+            <div className="flex justify-between mt-4">
+              <button
+                type="submit"
+                className="w-40 border border-defaultBlue-300 rounded-sm bg-defaultBlue-300 text-white px-4 py-2 hover:bg-white hover:text-defaultBlue-300 transition-all  "
+                disabled={isSubmitting || isLoading}
+              >
+                {isLoading ? (
+                  <LoadingComponent height="full" />
+                ) : (
+                  'Create Trophy'
+                )}
+              </button>
+            </div>
+          </form>
+        </FormProvider>
         <div className="flex flex-col w-1/3 gap-4">
           <TrophyMain creation={true} trophy={trophy} />
           <TrophyComponent creation={true} trophy={trophy} />
-
-          <ul className="flex flex-col gap-4">
-            {taskRadioOptions.map((option, index) => (
-              <li key={index} className="flex items-center">
-                <span className="w-full">{option}</span>{' '}
-                <div className="flex w-full  gap-4 justify-end">
-                  <label className="bg-green-300 py-1  px-2 rounded-sm  min-w-40">
-                    <input
-                      type="checkbox"
-                      checked={goodAnswerIndex === index}
-                      required
-                      onChange={() => handleSetGoodAnswer(index)}
-                    />{' '}
-                    Good Answer
-                  </label>
-                  <button
-                    onClick={() => handleRemoveOption(index)}
-                    className="bg-red-400 py-1 px-2 w-24 rounded-sm text-white"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </div>

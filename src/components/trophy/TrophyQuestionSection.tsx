@@ -30,7 +30,7 @@ const TrophyQuestionSection = ({
                 selectedAnswer === option || userTrophy?.answer == option
                   ? 'bg-blue-400'
                   : 'bg-blue-200'
-              } min-w-8  py-2 px-4 min-h-8 flex items-center justify-center rounded-sm transition-all ${
+              } min-w-32  py-2 px-4 min-h-8 flex items-center justify-center rounded-sm transition-all ${
                 !userTrophy?.answer && !creation
                   ? 'hover:bg-blue-400 cursor-pointer '
                   : ''

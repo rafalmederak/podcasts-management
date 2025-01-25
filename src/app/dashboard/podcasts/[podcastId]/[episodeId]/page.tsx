@@ -138,7 +138,7 @@ const EpisodePage = () => {
               </Link>
             )}
           </div>
-          <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] lg:overflow-y-auto md:px-4 pt-2 mt-2">
+          <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-250px)] 2xl:h-[calc(100vh-250px)] lg:overflow-y-auto md:px-4 pt-2 mt-2">
             <div className="flex flex-col w-full gap-4 my-1 relative">
               {trophiesData?.length == 0 && (
                 <p>Currently there are no trophies for this episode.</p>

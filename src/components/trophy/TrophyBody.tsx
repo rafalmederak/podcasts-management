@@ -9,9 +9,8 @@ type TrophyBodyProps = {
 };
 
 const TrophyBody = ({ creation, trophy }: TrophyBodyProps) => {
-  console.log(trophy);
   return (
-    <div className="flex flex-col md:flex gap-4 w-full h-full">
+    <div className="flex flex-col md:flex gap-4 w-full">
       <div className="w-40 min-h-40">
         <div className="w-40 h-full relative">
           {trophy.photo ? (
