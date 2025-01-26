@@ -5,6 +5,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -181,5 +182,31 @@ export async function deleteTrophy(
     await Promise.all(deleteFilesPromises);
   } catch (error) {
     console.error(error);
+  }
+}
+
+export const updateTrophy = async (trophy: Trophy) => {
+  try {
+    const docRef = doc(db, 'trophies', trophy.id);
+    await setDoc(docRef, trophy, { merge: true });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export async function getTrophyById(trophyId: string): Promise<Trophy | null> {
+  try {
+    const trophyRef = doc(db, 'trophies', trophyId);
+    const trophyDoc = await getDoc(trophyRef);
+
+    if (trophyDoc.exists()) {
+      return { id: trophyDoc.id, ...trophyDoc.data() } as Trophy;
+    } else {
+      console.error('Trophy not found');
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }

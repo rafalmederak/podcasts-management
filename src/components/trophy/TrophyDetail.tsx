@@ -24,6 +24,7 @@ import TrophyQuestionSection from './TrophyQuestionSection';
 import { mutate } from 'swr';
 import { useParams, useRouter } from 'next/navigation';
 import Modal from '../Modal';
+import Link from 'next/link';
 
 type TaskDetailProps = {
   trophy: Trophy;
@@ -170,7 +171,13 @@ const TrophyDetail = ({
               </button>
             )}
           {podcastDataUserId === currentUser.uid && (
-            <>
+            <div className="flex gap-4">
+              <Link
+                href={`/dashboard/podcasts/${params.podcastId}/${params.episodeId}/${trophy.id}/edit-trophy`}
+                className=" bg-defaultBlue-300 w-32 text-center text-white px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
+              >
+                Edit Trophy
+              </Link>
               <button
                 onClick={() =>
                   openModal(
@@ -183,7 +190,7 @@ const TrophyDetail = ({
               >
                 Delete Trophy
               </button>
-            </>
+            </div>
           )}
           <Modal
             isOpen={isModalOpen}

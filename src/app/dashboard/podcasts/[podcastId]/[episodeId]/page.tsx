@@ -51,15 +51,6 @@ const EpisodePage = () => {
   const [modalMessage, setModalMessage] = useState('');
   const [isNotification, setIsNotification] = useState(false);
 
-  const { data: trophiesData } = useSWR(`episodes_${params.episodeId}`, () =>
-    getEpisodeTrophies(params.episodeId)
-  );
-
-  const { data: userTrophiesData } = useSWR(
-    `userTrophies_${currentUser?.uid}_${params.episodeId}`,
-    () => getEpisodeUserTrophies(params.episodeId, currentUser?.uid)
-  );
-
   const { data: podcastData } = useSWR(`${params.podcastId}`, getPodcast, {
     suspense: true,
   });
@@ -68,6 +59,15 @@ const EpisodePage = () => {
     `episodeLikes_${params.episodeId}_${currentUser.uid}`,
     () => getEpisodeUserLike(params.episodeId, currentUser.uid),
     { revalidateOnFocus: true }
+  );
+
+  const { data: trophiesData } = useSWR(`episodes_${params.episodeId}`, () =>
+    getEpisodeTrophies(params.episodeId)
+  );
+
+  const { data: userTrophiesData } = useSWR(
+    `userTrophies_${currentUser?.uid}_${params.episodeId}`,
+    () => getEpisodeUserTrophies(params.episodeId, currentUser?.uid)
   );
 
   const {
@@ -199,12 +199,14 @@ const EpisodePage = () => {
           <div className="flex justify-between items-center md:px-4">
             <h2 className="text-lg font-bold">Episode Tasks</h2>
             {podcastData.userId === currentUser.uid && (
-              <Link
-                href={`/dashboard/podcasts/${params.podcastId}/${episodeData.id}/add-trophy`}
-                className="text-sm bg-defaultBlue-300 text-white px-3 py-2 rounded-md shadow-md hover:scale-[1.025] transition-all"
-              >
-                + Add Trophy
-              </Link>
+              <div>
+                <Link
+                  href={`/dashboard/podcasts/${params.podcastId}/${episodeData.id}/add-trophy`}
+                  className="text-sm bg-defaultBlue-300 text-white px-3 py-2 rounded-md shadow-md hover:scale-[1.025] transition-all"
+                >
+                  + Add Trophy
+                </Link>
+              </div>
             )}
           </div>
           <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-250px)] 2xl:h-[calc(100vh-250px)] lg:overflow-y-auto md:px-4 pt-2 mt-2">
