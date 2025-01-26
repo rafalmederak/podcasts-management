@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-export const episodeSchema = yup.object().shape({
+export const editEpisodeSchema = yup.object().shape({
   title: yup
     .string()
     .required('Title is required')
@@ -8,35 +8,26 @@ export const episodeSchema = yup.object().shape({
   description: yup.string().required('Description is required'),
   photo: yup
     .mixed<File>()
-    .required('Photo is required')
     .test('fileType', 'Only image files are allowed', (value) => {
-      if (value && value instanceof File) {
-        return ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(
+      return (
+        !value ||
+        ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(
           value.type
-        );
-      }
-      return false;
+        )
+      );
     })
-    .test('fileSize', 'File is too large', (value) => {
-      if (value && value instanceof File) {
-        return value.size <= 5 * 1024 * 1024; // 5MB max file size
-      }
-      return false;
+    .test('fileSize', 'File size must be less than 5MB', (value) => {
+      return !value || value.size <= 5 * 1024 * 1024;
     }),
   audio: yup
     .mixed<File>()
-    .required('Audio file is required')
     .test('fileType', 'Only audio files are allowed', (value) => {
-      if (value && value instanceof File) {
-        return ['audio/mpeg', 'audio/wav', 'audio/ogg'].includes(value.type);
-      }
-      return false;
+      return (
+        !value || ['audio/mpeg', 'audio/wav', 'audio/ogg'].includes(value.type)
+      );
     })
     .test('fileSize', 'File is too large', (value) => {
-      if (value && value instanceof File) {
-        return value.size <= 50 * 1024 * 1024; // 50MB max file size
-      }
-      return false;
+      return !value || value.size <= 50 * 1024 * 1024;
     }),
   date: yup
     .string()

@@ -6,7 +6,6 @@ import { uploadFile } from '@/utils/photoChange';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import useSWR, { mutate } from 'swr';
-import { v4 as uuidv4 } from 'uuid';
 import LoadingComponent from '@/components/Loading';
 import { auth } from '@/firebase/firebaseConfig';
 import { getTrophyById, updateTrophy } from '@/services/trophies.service';
@@ -58,7 +57,6 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
     trophyId: string;
   }>();
 
-  const trophyId = uuidv4();
   const [photoURL, setPhotoURL] = useState<string>(trophyData.photo);
   const [goodAnswerIndex, setGoodAnswerIndex] = useState<number | null>(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -163,7 +161,7 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
   };
 
   const trophy: Trophy = {
-    id: trophyId,
+    id: params.trophyId,
     episodeId: params.episodeId,
     title: methods.watch('title'),
     photo: photoURL,

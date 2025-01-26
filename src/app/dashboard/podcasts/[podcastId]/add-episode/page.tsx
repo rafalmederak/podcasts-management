@@ -199,6 +199,7 @@ const AddEpisode = () => {
                     <input
                       {...field}
                       type="date"
+                      max={new Date().toISOString().split('T')[0]}
                       className="rounded-sm border border-1 p-2 w-full"
                     />
                     {error && (

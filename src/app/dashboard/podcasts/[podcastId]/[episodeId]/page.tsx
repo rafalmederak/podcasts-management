@@ -160,7 +160,13 @@ const EpisodePage = () => {
           <h1 className="text-lg font-medium">{podcastData.title}</h1>
         </Link>
         {podcastData.userId === currentUser.uid && (
-          <div className="px-4">
+          <div className="flex gap-4 items-center px-4">
+            <Link
+              href={`/dashboard/podcasts/${params.podcastId}/${params.episodeId}/edit-episode`}
+              className=" bg-defaultBlue-300 w-32 text-center text-white px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
+            >
+              Edit Episode
+            </Link>
             <button
               onClick={() =>
                 openModal(

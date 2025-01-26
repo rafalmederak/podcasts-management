@@ -206,3 +206,12 @@ export async function deleteEpisode(episodeId: string, podcastId: string) {
 
   await deleteDoc(episodeRef);
 }
+
+export const updateEpisode = async (episode: EpisodeType) => {
+  try {
+    const docRef = doc(db, 'episodes', episode.id);
+    await setDoc(docRef, episode, { merge: true });
+  } catch (error) {
+    console.error(error);
+  }
+};
