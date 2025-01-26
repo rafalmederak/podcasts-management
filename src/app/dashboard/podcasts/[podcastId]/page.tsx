@@ -186,9 +186,9 @@ const PodcastProfilePage = () => {
                     <Link
                       href={`/dashboard/podcasts/${params.podcastId}/${item.id}`}
                       key={item.id}
-                      className="flex w-full border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all"
+                      className="flex h-48 w-full border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all"
                     >
-                      <div className="w-40 h-full">
+                      <div className="w-40 h-40">
                         <div className="w-40 h-full relative">
                           <Image
                             src={item.photo}
