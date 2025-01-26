@@ -180,3 +180,12 @@ export async function deletePodcast(podcastId: string) {
     console.error(error);
   }
 }
+
+export const updatePodcast = async (podcast: Podcast) => {
+  try {
+    const docRef = doc(db, 'podcasts', podcast.id);
+    await setDoc(docRef, podcast, { merge: true });
+  } catch (error) {
+    console.error(error);
+  }
+};

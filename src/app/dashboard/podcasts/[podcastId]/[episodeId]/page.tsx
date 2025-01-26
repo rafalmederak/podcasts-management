@@ -160,7 +160,7 @@ const EpisodePage = () => {
           <h1 className="text-lg font-medium">{podcastData.title}</h1>
         </Link>
         {podcastData.userId === currentUser.uid && (
-          <>
+          <div className="px-4">
             <button
               onClick={() =>
                 openModal(
@@ -173,7 +173,7 @@ const EpisodePage = () => {
             >
               Delete Episode
             </button>
-          </>
+          </div>
         )}
       </div>
       <Modal

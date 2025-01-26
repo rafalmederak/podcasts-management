@@ -119,7 +119,13 @@ const PodcastProfilePage = () => {
           <h2 className="text-md">{podcastData.host}</h2>
         </div>
         {podcastData?.userId === currentUser.uid && (
-          <>
+          <div className="flex gap-4 items-center px-4">
+            <Link
+              href={`/dashboard/podcasts/${params.podcastId}/edit-podcast`}
+              className=" bg-defaultBlue-300 w-32 text-center text-white px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
+            >
+              Edit Podcast
+            </Link>
             <button
               onClick={() =>
                 openModal(
@@ -132,7 +138,7 @@ const PodcastProfilePage = () => {
             >
               Delete Podcast
             </button>
-          </>
+          </div>
         )}
 
         <Modal
