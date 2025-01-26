@@ -1,5 +1,5 @@
 import { db } from '@/firebase/firebaseConfig';
-import { Episode } from '@/types/episode';
+import { EpisodeType } from '@/types/episode';
 import { User } from 'firebase/auth';
 import {
   collection,
@@ -15,6 +15,8 @@ import {
   where,
 } from 'firebase/firestore';
 import { getPodcast } from './podcasts.service';
+import { deleteTrophy } from './trophies.service';
+import { deleteObject, getStorage, listAll, ref } from 'firebase/storage';
 
 export async function getPodcastEpisodes(podcastId: string) {
   const q = query(
@@ -24,25 +26,31 @@ export async function getPodcastEpisodes(podcastId: string) {
 
   const querySnapshot = await getDocs(q);
 
-  return querySnapshot.docs.map((doc) => ({
+  const episodes = querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as Episode[];
+  })) as EpisodeType[];
+
+  episodes.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  return episodes;
 }
 
-export async function getEpisode(episodeId: Episode['id']) {
+export async function getEpisode(episodeId: EpisodeType['id']) {
   const episodeRef = doc(db, 'episodes', episodeId);
   const episodeData = await getDoc(episodeRef);
 
   if (episodeData.exists()) {
-    return { id: episodeData.id, ...episodeData.data() } as Episode;
+    return { id: episodeData.id, ...episodeData.data() } as EpisodeType;
   } else {
     throw new Error(`Episode with id ${episodeId} not found`);
   }
 }
 
 export async function addLikeToEpisode(
-  episodeId: Episode['id'],
+  episodeId: EpisodeType['id'],
   userId: User['uid']
 ) {
   const likeId = `${userId}_${episodeId}`;
@@ -56,7 +64,7 @@ export async function addLikeToEpisode(
 }
 
 export async function removeLikeFromEpisode(
-  episodeId: Episode['id'],
+  episodeId: EpisodeType['id'],
   userId: User['uid']
 ) {
   const likeId = `${userId}_${episodeId}`;
@@ -66,7 +74,7 @@ export async function removeLikeFromEpisode(
 }
 
 export async function getEpisodeUserLike(
-  episodeId: Episode['id'],
+  episodeId: EpisodeType['id'],
   userId: User['uid']
 ) {
   const likeDocRef = doc(db, 'episodeLikes', `${userId}_${episodeId}`);
@@ -101,7 +109,7 @@ export async function getUserLikedEpisodes(
 
   const episodes = await Promise.all(
     episodesSnapshot.docs.map(async (doc) => {
-      const episodeData = doc.data() as Episode;
+      const episodeData = doc.data() as EpisodeType;
       const podcastId = episodeData.podcastId;
       const podcast = await getPodcast(podcastId);
 
@@ -125,3 +133,85 @@ export async function getUserLikedCount(userId: User['uid']): Promise<number> {
   const countSnapshot = await getCountFromServer(likedQuery);
   return countSnapshot.data().count;
 }
+
+export async function addEpisode(
+  episodeId: string,
+  podcastId: string,
+  title: string,
+  date: string,
+  description: string,
+  longDescription: string,
+  photo: string,
+  audioURL: string | ArrayBuffer | null,
+  spotifyURL?: string,
+  applePodcastsURL?: string,
+  ytMusicURL?: string
+) {
+  const episodeRef = doc(db, 'episodes', episodeId);
+
+  await setDoc(episodeRef, {
+    podcastId,
+    title,
+    date,
+    description,
+    longDescription,
+    photo,
+    audioURL,
+    spotifyURL,
+    applePodcastsURL,
+    ytMusicURL,
+    createdAt: Timestamp.now(),
+  });
+}
+
+export async function deleteEpisode(episodeId: string, podcastId: string) {
+  const episodeRef = doc(db, 'episodes', episodeId);
+
+  const trophiesQuery = query(
+    collection(db, 'trophies'),
+    where('episodeId', '==', episodeId)
+  );
+  const trophiesSnapshot = await getDocs(trophiesQuery);
+
+  const deleteTrophiesPromises = trophiesSnapshot.docs.map((trophyDoc) =>
+    deleteTrophy(trophyDoc.id, { podcastId, episodeId })
+  );
+  await Promise.all(deleteTrophiesPromises);
+
+  const likesQuery = query(
+    collection(db, 'episodeLikes'),
+    where('episodeId', '==', episodeId)
+  );
+  const likesSnapshot = await getDocs(likesQuery);
+
+  const deleteLikesPromises = likesSnapshot.docs.map((likeDoc) =>
+    deleteDoc(likeDoc.ref)
+  );
+  await Promise.all(deleteLikesPromises);
+
+  const storage = getStorage();
+  const episodeFolderPath = `podcasts/${podcastId}/episodes/${episodeId}`;
+  const episodeFolderRef = ref(storage, episodeFolderPath);
+
+  try {
+    const listResult = await listAll(episodeFolderRef);
+
+    const deleteFilesPromises = listResult.items.map((fileRef) =>
+      deleteObject(fileRef)
+    );
+    await Promise.all(deleteFilesPromises);
+  } catch (error) {
+    console.error(error);
+  }
+
+  await deleteDoc(episodeRef);
+}
+
+export const updateEpisode = async (episode: EpisodeType) => {
+  try {
+    const docRef = doc(db, 'episodes', episode.id);
+    await setDoc(docRef, episode, { merge: true });
+  } catch (error) {
+    console.error(error);
+  }
+};

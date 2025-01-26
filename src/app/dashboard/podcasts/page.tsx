@@ -33,9 +33,17 @@ const PodcastsPage = () => {
 
   return (
     <div className="page__responsive">
-      <h2 className="page__title">Podcasts</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="page__title">Podcasts</h2>
+        <Link
+          href="/dashboard/podcasts/create-podcast"
+          className="text-sm bg-defaultBlue-300 text-white px-3 py-2 rounded-md shadow-md hover:scale-[1.025] transition-all"
+        >
+          + Create podcast
+        </Link>
+      </div>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <div className="flex flex-wrap gap-12 w-full">
+      <div className="flex flex-wrap gap-12 w-full overflow-y-auto">
         {podcastsIsLoading || !podcastsData ? (
           <p>Loading podcasts...</p>
         ) : filteredData.length === 0 ? (
@@ -45,7 +53,7 @@ const PodcastsPage = () => {
             <Link
               key={item.id}
               href={`/dashboard/podcasts/${item.id}`}
-              className="flex flex-col items-start justify-start w-full sm:w-96 hover:scale-105 cursor-pointer transition-all"
+              className="flex flex-col items-start justify-start w-full sm:w-96 hover:scale-95 cursor-pointer transition-all"
             >
               <div className="w-full h-72 relative">
                 <Image

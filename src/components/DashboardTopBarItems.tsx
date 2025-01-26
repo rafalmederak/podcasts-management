@@ -1,4 +1,3 @@
-import { ExtendedUser } from '@/types/user';
 import {
   ArrowLeftStartOnRectangleIcon,
   PresentationChartBarIcon,

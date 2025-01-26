@@ -1,75 +1,55 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
+import Image from 'next/image';
+import { auth } from '@/firebase/firebaseConfig';
 
 //icons
 import {
   ArrowLeftCircleIcon,
   CheckCircleIcon,
-  ClockIcon,
-  PauseCircleIcon,
-  PlayCircleIcon,
   TrophyIcon,
 } from '@heroicons/react/24/solid';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
-//logos
-import YTMusicLogo from '@/assets/logos/yt_music_full_rgb_black.png';
-import ApplePodcastsLogo from '@/assets/logos/Apple_Podcasts_Icon_RGB.svg';
-import SpotifyLogo from '@/assets/logos/Spotify_Primary_Logo_RGB_Green.png';
+//components
+import Episode from '@/components/Episode';
+import TrophyDetail from '@/components/trophy/TrophyDetail';
+
+//types
+import { Trophy, UserTrophy } from '@/types/trophy';
 
 //services
 import {
-  addLikeToEpisode,
+  deleteEpisode,
   getEpisode,
   getEpisodeUserLike,
-  removeLikeFromEpisode,
 } from '@/services/episodes.service';
 import { getPodcast } from '@/services/podcasts.service';
 import {
   getEpisodeTrophies,
   getEpisodeUserTrophies,
 } from '@/services/trophies.service';
-
-//types
-import { Trophy, UserTrophy } from '@/types/trophy';
-
-//components
-import TrophyDetail from '@/components/TrophyDetail';
-import { auth } from '@/firebase/firebaseConfig';
+import Modal from '@/components/Modal';
 
 const EpisodePage = () => {
   const { currentUser } = auth;
   if (!currentUser) return null;
+
   const params = useParams<{ podcastId: string; episodeId: string }>();
+
+  const router = useRouter();
 
   const [isEpisodeLiked, setIsEpisodeLiked] = useState(false);
   const [isTrophyDetailOpen, setIsTrophyDetailOpen] = useState(false);
   const [selectedTrophy, setSelectedTrophy] = useState<Trophy | null>(null);
 
-  const handleTrophyClick = (trophy: Trophy) => {
-    setSelectedTrophy(trophy);
-    setIsTrophyDetailOpen(true);
-  };
-
-  //audio
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
-  const [audioDuration, setAudioDuration] = useState(0);
-
-  const { data: trophiesData } = useSWR(`episodes_${params.episodeId}`, () =>
-    getEpisodeTrophies(params.episodeId)
-  );
-
-  const { data: userTrophiesData } = useSWR(
-    `userTrophies_${currentUser?.uid}`,
-    () => getEpisodeUserTrophies(params.episodeId, currentUser?.uid)
-  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [isNotification, setIsNotification] = useState(false);
 
   const { data: podcastData } = useSWR(`${params.podcastId}`, getPodcast, {
     suspense: true,
@@ -81,36 +61,20 @@ const EpisodePage = () => {
     { revalidateOnFocus: true }
   );
 
+  const { data: trophiesData } = useSWR(`episodes_${params.episodeId}`, () =>
+    getEpisodeTrophies(params.episodeId)
+  );
+
+  const { data: userTrophiesData } = useSWR(
+    `userTrophies_${currentUser?.uid}_${params.episodeId}`,
+    () => getEpisodeUserTrophies(params.episodeId, currentUser?.uid)
+  );
+
   const {
     data: episodeData,
     error: episodeError,
     isLoading: episodeIsLoading,
   } = useSWR(`${params.episodeId}`, () => getEpisode(params.episodeId));
-
-  useEffect(() => {
-    if (episodeData && audioRef.current) {
-      const audio = audioRef.current;
-      audio.ontimeupdate = () => setAudioCurrentTime(audio.currentTime);
-      audio.onloadedmetadata = () => setAudioDuration(audio.duration);
-      audio.onended = () => handleAudioEnd();
-    }
-  }, [episodeData]);
-
-  useEffect(() => {
-    episodeLikes ? setIsEpisodeLiked(true) : setIsEpisodeLiked(false);
-  }, [episodeLikes]);
-
-  if (episodeError) {
-    return <div>Error loading episode.</div>;
-  }
-
-  if (episodeIsLoading || !episodeData) {
-    return <div>Loading episode...</div>;
-  }
-
-  const formattedEpisodeDescription = episodeData.longDescription
-    ? episodeData.longDescription.replace(/\\n/g, '\n')
-    : null;
 
   const isUserTrophy = (itemId: Trophy['id']) => {
     if (!userTrophiesData) return null;
@@ -118,6 +82,11 @@ const EpisodePage = () => {
       (trophy) =>
         trophy.userId === currentUser?.uid && trophy.trophyId === itemId
     );
+  };
+
+  const handleTrophyClick = (trophy: Trophy) => {
+    setSelectedTrophy(trophy);
+    setIsTrophyDetailOpen(true);
   };
 
   const sortTrophies = (
@@ -139,57 +108,42 @@ const EpisodePage = () => {
     });
   };
 
-  //functions
+  useEffect(() => {
+    episodeLikes ? setIsEpisodeLiked(true) : setIsEpisodeLiked(false);
+  }, [episodeLikes]);
 
-  const handleLike = async () => {
+  if (episodeError) {
+    return <div>Error loading episode.</div>;
+  }
+
+  if (episodeIsLoading || !episodeData) {
+    return <div>Loading episode...</div>;
+  }
+
+  const openModal = (title: string, message: string, notification = false) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setIsNotification(notification);
+    setIsModalOpen(true);
+  };
+
+  const closeNotification = (redirect: string) => {
+    setIsModalOpen(false);
+    router.push(redirect);
+  };
+
+  const handleDeleteEpisode = async () => {
     try {
-      await addLikeToEpisode(episodeData.id, currentUser.uid);
-      setIsEpisodeLiked(true);
+      await deleteEpisode(params.episodeId, params.podcastId);
+      openModal('Notification', 'Episode deleted successfully.', true);
     } catch (error) {
       console.error(error);
+      openModal(
+        'Error',
+        'Failed to delete the episode. Please try again.',
+        true
+      );
     }
-  };
-
-  const handleUnlike = async () => {
-    try {
-      await removeLikeFromEpisode(episodeData.id, currentUser.uid);
-      setIsEpisodeLiked(false);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isAudioPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsAudioPlaying(!isAudioPlaying);
-    }
-  };
-
-  const handleProgressClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (audioRef.current && audioDuration) {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const clickPosition = event.clientX - rect.left;
-      const clickPercentage = clickPosition / rect.width;
-      const newTime = clickPercentage * audioDuration;
-      audioRef.current.currentTime = newTime;
-      setAudioCurrentTime(newTime);
-    }
-  };
-
-  const handleAudioEnd = () => {
-    setIsAudioPlaying(false);
-    setAudioCurrentTime(0);
-  };
-
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   return (
@@ -197,149 +151,71 @@ const EpisodePage = () => {
       {isTrophyDetailOpen && (
         <div className="fixed top-[56px] left-[208px] right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm z-10"></div>
       )}
-      <Link
-        href={`/dashboard/podcasts/${params.podcastId}`}
-        className="inline-flex items-center gap-2 md:mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
-      >
-        <ArrowLeftCircleIcon className="w-6 h-6 text-defaultBlue-300 cursor-pointer" />
-        <h1 className="text-lg font-medium">{podcastData.title}</h1>
-      </Link>
-      <div className="flex flex-col 2xl:flex-row gap-8 2xl:gap-6 w-full">
-        <div className="flex flex-col w-full 2xl:w-3/5 lg:max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] lg:overflow-y-auto 2xl:pb-4 md:px-4">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row">
-              <div className="w-full md:w-52 h-52 relative">
-                <Image
-                  src={episodeData.photo}
-                  alt="Demo photo"
-                  fill={true}
-                  className="rounded-lg shadow-md object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <div className="flex flex-col items-start justify-between">
-                <div className="flex flex-col gap-2 mt-4 md:mt-0 md:ml-5 p-1">
-                  <h3 className="page__title">{episodeData.title}</h3>
-                  <p className="text-md text-defaultBlue-300">
-                    {episodeData.date}
-                  </p>
-                  <div className="flex items-center">
-                    <ClockIcon className="w-4 h-4" />
-                    <p className="ml-1">{formatTime(audioDuration)}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <TrophyIcon className="w-4 h-4" />
-                    <p className="ml-1">{trophiesData?.length}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={isEpisodeLiked ? handleUnlike : handleLike}
-                  className="flex items-center cursor-pointer rounded-md hover:bg-gray-100 transition-all md:ml-5 pl-1 py-1 pr-2"
-                >
-                  {isEpisodeLiked ? (
-                    <CheckCircleIcon className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <PlusCircleIcon className="w-5 h-5" />
-                  )}
-                  <p className="ml-1 ">
-                    {isEpisodeLiked ? 'Liked' : 'Add to liked'}
-                  </p>
-                </button>
-              </div>
-            </div>
-            <p>{episodeData.description}</p>
-            <div className="flex flex-col lg:flex-row gap-2">
-              <div className="flex items-start ">
-                <button onClick={togglePlay}>
-                  {isAudioPlaying ? (
-                    <PauseCircleIcon className="w-8 h-8 text-defaultBlue-300 cursor-pointer" />
-                  ) : (
-                    <PlayCircleIcon className="w-8 h-8 text-defaultBlue-300 cursor-pointer" />
-                  )}
-                </button>
-                <audio
-                  ref={audioRef}
-                  src={episodeData.audioURL}
-                  preload="auto"
-                />
-                <div className="flex flex-col mt-[3px] w-full md:w-96 ml-1">
-                  <div
-                    className="group w-full md:w-96 h-6 rounded-lg bg-gray-200 relative border-gray-200 border-2"
-                    onClick={handleProgressClick}
-                  >
-                    <div
-                      className={`h-full bg-white group-hover:bg-blue-500 transition-all rounded-md w-[${
-                        (audioCurrentTime / audioDuration) * 100
-                      }%]`}
-                      style={{
-                        width: `${(audioCurrentTime / audioDuration) * 100}%`,
-                      }}
-                    ></div>
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="text-sm">
-                      {formatTime(audioCurrentTime)}
-                    </span>
-                    <span className="text-sm">{formatTime(audioDuration)}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex mt-[3px] gap-2">
-                {episodeData.spotifyURL && (
-                  <a
-                    href={episodeData.spotifyURL}
-                    target="_blank"
-                    className="w-6 h-6 relative cursor-pointer"
-                  >
-                    <Image
-                      src={SpotifyLogo}
-                      alt="Spotify"
-                      fill={true}
-                      className="object-cover rounded-md p-1 bg-black"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </a>
-                )}
-                {episodeData.applePodcastsURL && (
-                  <a
-                    href={episodeData.applePodcastsURL}
-                    target="_blank"
-                    className="w-6 h-6 relative cursor-pointer"
-                  >
-                    <Image
-                      src={ApplePodcastsLogo}
-                      alt="Apple Podcasts"
-                      fill={true}
-                      className="object-cover rounded-md"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </a>
-                )}
-                {episodeData.ytMusicURL && (
-                  <a
-                    href={episodeData.ytMusicURL}
-                    target="_blank"
-                    className=" h-6 w-24 relative cursor-pointer"
-                  >
-                    <Image
-                      src={YTMusicLogo}
-                      alt="YouTube Music"
-                      fill={true}
-                      className="object-contain"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </a>
-                )}
-              </div>
-            </div>
-            <div className="whitespace-pre-line leading-normal">
-              {formattedEpisodeDescription}
-            </div>
+      <div className="flex justify-between items-center w-full">
+        <Link
+          href={`/dashboard/podcasts/${params.podcastId}`}
+          className="inline-flex items-center gap-2 md:mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
+        >
+          <ArrowLeftCircleIcon className="w-6 h-6 text-defaultBlue-300 cursor-pointer" />
+          <h1 className="text-lg font-medium">{podcastData.title}</h1>
+        </Link>
+        {podcastData.userId === currentUser.uid && (
+          <div className="flex gap-4 items-center px-4">
+            <Link
+              href={`/dashboard/podcasts/${params.podcastId}/${params.episodeId}/edit-episode`}
+              className=" bg-defaultBlue-300 w-32 text-center text-white px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
+            >
+              Edit Episode
+            </Link>
+            <button
+              onClick={() =>
+                openModal(
+                  'Confirm Deletion',
+                  `Are you sure you want to delete the episode "${episodeData?.title}"? This action cannot be undone.`,
+                  false
+                )
+              }
+              className="px-4 py-2 text-white bg-red-500 rounded h-10 hover:bg-red-700"
+            >
+              Delete Episode
+            </button>
           </div>
-        </div>
+        )}
+      </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={
+          isNotification
+            ? () => closeNotification(`/dashboard/podcasts/${params.podcastId}`)
+            : () => setIsModalOpen(false)
+        }
+        title={modalTitle}
+        message={modalMessage}
+        onConfirm={!isNotification ? handleDeleteEpisode : undefined}
+        confirmText={!isNotification ? 'Delete' : undefined}
+        cancelText={isNotification ? 'Close' : 'Cancel'}
+      />
+      <div className="flex flex-col 2xl:flex-row gap-8 2xl:gap-6 w-full">
+        <Episode
+          episodeData={episodeData}
+          isEpisodeLiked={isEpisodeLiked}
+          setIsEpisodeLiked={setIsEpisodeLiked}
+        />
         <div className="flex w-full 2xl:w-2/5 flex-col">
-          <h2 className="text-lg font-bold md:px-4">Episode Tasks</h2>
-          <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-206px)] 2xl:h-[calc(100vh-206px)] lg:overflow-y-auto md:px-4 pt-2">
+          <div className="flex justify-between items-center md:px-4">
+            <h2 className="text-lg font-bold">Episode Tasks</h2>
+            {podcastData.userId === currentUser.uid && (
+              <div>
+                <Link
+                  href={`/dashboard/podcasts/${params.podcastId}/${episodeData.id}/add-trophy`}
+                  className="text-sm bg-defaultBlue-300 text-white px-3 py-2 rounded-md shadow-md hover:scale-[1.025] transition-all"
+                >
+                  + Add Trophy
+                </Link>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2  lg:max-h-[calc(100vh-250px)] 2xl:h-[calc(100vh-250px)] lg:overflow-y-auto md:px-4 pt-2 mt-2">
             <div className="flex flex-col w-full gap-4 my-1 relative">
               {trophiesData?.length == 0 && (
                 <p>Currently there are no trophies for this episode.</p>
@@ -388,6 +264,7 @@ const EpisodePage = () => {
                 ))}
               {isTrophyDetailOpen && selectedTrophy && (
                 <TrophyDetail
+                  podcastDataUserId={podcastData.userId}
                   currentUser={currentUser}
                   trophy={selectedTrophy}
                   setIsTrophyDetailOpen={setIsTrophyDetailOpen}

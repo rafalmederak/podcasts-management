@@ -14,6 +14,8 @@ import {
   limit,
   getCountFromServer,
 } from 'firebase/firestore';
+import { deleteEpisode } from './episodes.service';
+import { deleteObject, getStorage, listAll, ref } from 'firebase/storage';
 
 export async function getPodcasts() {
   const querySnapshot = await getDocs(collection(db, 'podcasts'));
@@ -115,3 +117,75 @@ export async function getUserSubscriptionsCount(
   const countSnapshot = await getCountFromServer(subscriptionsQuery);
   return countSnapshot.data().count;
 }
+
+export async function addPodcast(
+  podcastId: string,
+  userId: string,
+  photo: string,
+  title: string,
+  host: string,
+  description: string
+) {
+  const podcastRef = doc(db, 'podcasts', podcastId);
+
+  await setDoc(podcastRef, {
+    userId,
+    photo,
+    title,
+    host,
+    description,
+    createdAt: Timestamp.now(),
+  });
+}
+
+export async function deletePodcast(podcastId: string) {
+  const podcastRef = doc(db, 'podcasts', podcastId);
+
+  await deleteDoc(podcastRef);
+
+  const subscriptionsQuery = query(
+    collection(db, 'podcastSubscriptions'),
+    where('podcastId', '==', podcastId)
+  );
+  const subscriptionsSnapshot = await getDocs(subscriptionsQuery);
+
+  const deleteSubscriptionsPromises = subscriptionsSnapshot.docs.map((doc) =>
+    deleteDoc(doc.ref)
+  );
+  await Promise.all(deleteSubscriptionsPromises);
+
+  const episodesQuery = query(
+    collection(db, 'episodes'),
+    where('podcastId', '==', podcastId)
+  );
+  const episodesSnapshot = await getDocs(episodesQuery);
+
+  const deleteEpisodesPromises = episodesSnapshot.docs.map((doc) =>
+    deleteEpisode(doc.id, podcastId)
+  );
+  await Promise.all(deleteEpisodesPromises);
+
+  const storage = getStorage();
+  const podcastFolderPath = `podcasts/${podcastId}`;
+  const podcastFolderRef = ref(storage, podcastFolderPath);
+
+  try {
+    const listResult = await listAll(podcastFolderRef);
+
+    const deleteFilesPromises = listResult.items.map((fileRef) =>
+      deleteObject(fileRef)
+    );
+    await Promise.all(deleteFilesPromises);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const updatePodcast = async (podcast: Podcast) => {
+  try {
+    const docRef = doc(db, 'podcasts', podcast.id);
+    await setDoc(docRef, podcast, { merge: true });
+  } catch (error) {
+    console.error(error);
+  }
+};

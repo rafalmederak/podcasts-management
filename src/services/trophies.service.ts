@@ -3,7 +3,9 @@ import { Trophy, UserTrophy } from '@/types/trophy';
 import { User } from 'firebase/auth';
 import {
   collection,
+  deleteDoc,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -13,68 +15,7 @@ import {
 import { mutate } from 'swr';
 import { v4 as uuidv4 } from 'uuid';
 import { getEpisode } from './episodes.service';
-
-export async function getPodcastRanking(podcastId: string) {
-  try {
-    const episodesQuery = query(
-      collection(db, 'episodes'),
-      where('podcastId', '==', podcastId)
-    );
-    const episodesSnapshot = await getDocs(episodesQuery);
-    const episodeIds = episodesSnapshot.docs.map((doc) => doc.id);
-
-    if (episodeIds.length === 0) {
-      return [];
-    }
-
-    const trophiesQuery = query(
-      collection(db, 'trophies'),
-      where('episodeId', 'in', episodeIds)
-    );
-    const trophiesSnapshot = await getDocs(trophiesQuery);
-    const trophyIds = trophiesSnapshot.docs.map((doc) => doc.id);
-
-    if (trophyIds.length === 0) {
-      return [];
-    }
-
-    const userTrophiesQuery = query(
-      collection(db, 'userTrophies'),
-      where('trophyId', 'in', trophyIds)
-    );
-    const userTrophiesSnapshot = await getDocs(userTrophiesQuery);
-
-    const userTrophiesCount: { [key: string]: number } = {};
-    userTrophiesSnapshot.forEach((doc) => {
-      const userId = doc.data().userId;
-      userTrophiesCount[userId] = (userTrophiesCount[userId] || 0) + 1;
-    });
-
-    const userIds = Object.keys(userTrophiesCount);
-    const usersQuery = query(
-      collection(db, 'users'),
-      where('__name__', 'in', userIds)
-    );
-    const usersSnapshot = await getDocs(usersQuery);
-
-    const ranking = usersSnapshot.docs.map((doc) => {
-      const userId = doc.id;
-      const userData = doc.data();
-      return {
-        userId,
-        displayName: userData.displayName,
-        photoURL: userData.photoURL,
-        trophiesCount: userTrophiesCount[userId],
-      };
-    });
-
-    ranking.sort((a, b) => b.trophiesCount - a.trophiesCount);
-
-    return ranking;
-  } catch (error) {
-    console.error(error);
-  }
-}
+import { deleteObject, getStorage, listAll, ref } from 'firebase/storage';
 
 export async function getEpisodeTrophies(episodeId: string) {
   const q = query(
@@ -183,4 +124,89 @@ export async function getUserTrophies(userId: User['uid']) {
   );
 
   return trophies;
+}
+
+export async function addTrophy({
+  id: trophyId,
+  episodeId,
+  title,
+  photo,
+  description,
+  level,
+  task,
+  goodAnswerIndex,
+}: Trophy) {
+  const trophyRef = doc(db, 'trophies', trophyId);
+
+  await setDoc(trophyRef, {
+    trophyId,
+    episodeId,
+    title,
+    photo,
+    description,
+    level,
+    task,
+    goodAnswerIndex,
+    createdAt: Timestamp.now(),
+  });
+}
+
+export async function deleteTrophy(
+  trophyId: string,
+  params: { podcastId: string; episodeId: string }
+) {
+  const userTrophiesQuery = query(
+    collection(db, 'userTrophies'),
+    where('trophyId', '==', trophyId)
+  );
+  const userTrophiesSnapshot = await getDocs(userTrophiesQuery);
+
+  const deleteUserTrophiesPromises = userTrophiesSnapshot.docs.map((doc) =>
+    deleteDoc(doc.ref)
+  );
+  await Promise.all(deleteUserTrophiesPromises);
+
+  const trophyRef = doc(db, 'trophies', trophyId);
+  await deleteDoc(trophyRef);
+
+  const storage = getStorage();
+  const trophyFolderPath = `podcasts/${params.podcastId}/episodes/${params.episodeId}/trophies/${trophyId}`;
+  const trophyFolderRef = ref(storage, trophyFolderPath);
+
+  try {
+    const listResult = await listAll(trophyFolderRef);
+
+    const deleteFilesPromises = listResult.items.map((fileRef) =>
+      deleteObject(fileRef)
+    );
+    await Promise.all(deleteFilesPromises);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const updateTrophy = async (trophy: Trophy) => {
+  try {
+    const docRef = doc(db, 'trophies', trophy.id);
+    await setDoc(docRef, trophy, { merge: true });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export async function getTrophyById(trophyId: string): Promise<Trophy | null> {
+  try {
+    const trophyRef = doc(db, 'trophies', trophyId);
+    const trophyDoc = await getDoc(trophyRef);
+
+    if (trophyDoc.exists()) {
+      return { id: trophyDoc.id, ...trophyDoc.data() } as Trophy;
+    } else {
+      console.error('Trophy not found');
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
