@@ -15,6 +15,8 @@ import {
   where,
 } from 'firebase/firestore';
 import { getPodcast } from './podcasts.service';
+import { deleteTrophy } from './trophies.service';
+import { deleteObject, getStorage, listAll, ref } from 'firebase/storage';
 
 export async function getPodcastEpisodes(podcastId: string) {
   const q = query(
@@ -160,4 +162,47 @@ export async function addEpisode(
     ytMusicURL,
     createdAt: Timestamp.now(),
   });
+}
+
+export async function deleteEpisode(episodeId: string, podcastId: string) {
+  const episodeRef = doc(db, 'episodes', episodeId);
+
+  const trophiesQuery = query(
+    collection(db, 'trophies'),
+    where('episodeId', '==', episodeId)
+  );
+  const trophiesSnapshot = await getDocs(trophiesQuery);
+
+  const deleteTrophiesPromises = trophiesSnapshot.docs.map((trophyDoc) =>
+    deleteTrophy(trophyDoc.id, { podcastId, episodeId })
+  );
+  await Promise.all(deleteTrophiesPromises);
+
+  const likesQuery = query(
+    collection(db, 'episodeLikes'),
+    where('episodeId', '==', episodeId)
+  );
+  const likesSnapshot = await getDocs(likesQuery);
+
+  const deleteLikesPromises = likesSnapshot.docs.map((likeDoc) =>
+    deleteDoc(likeDoc.ref)
+  );
+  await Promise.all(deleteLikesPromises);
+
+  const storage = getStorage();
+  const episodeFolderPath = `podcasts/${podcastId}/episodes/${episodeId}`;
+  const episodeFolderRef = ref(storage, episodeFolderPath);
+
+  try {
+    const listResult = await listAll(episodeFolderRef);
+
+    const deleteFilesPromises = listResult.items.map((fileRef) =>
+      deleteObject(fileRef)
+    );
+    await Promise.all(deleteFilesPromises);
+  } catch (error) {
+    console.error(error);
+  }
+
+  await deleteDoc(episodeRef);
 }

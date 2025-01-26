@@ -15,7 +15,9 @@ export const podcastSchema = yup.object().shape({
     .required('Photo is required')
     .test('fileType', 'Only image files are allowed', (value) => {
       if (value && value instanceof File) {
-        return ['image/jpeg', 'image/png', 'image/gif'].includes(value.type);
+        return ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(
+          value.type
+        );
       }
       return false;
     })

@@ -148,7 +148,7 @@ const Episode = ({
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col md:flex-row">
-          <div className="w-full md:w-52 h-52 relative">
+          <div className="w-full md:w-52 md:min-w-52 h-52 relative">
             {photo ? (
               <Image
                 src={photo}

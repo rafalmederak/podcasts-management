@@ -1,11 +1,12 @@
 'use client';
 import {
+  deletePodcast,
   getPodcast,
   getPodcastUserSubscription,
   subscribePodcast,
   unsubscribePodcast,
 } from '@/services/podcasts.service';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import Image from 'next/image';
@@ -16,13 +17,20 @@ import UserInitialsLogo from '@/components/UserInitialsLogo';
 import { auth } from '@/firebase/firebaseConfig';
 import { getPodcastRanking } from '@/firebase/getUsers';
 import Podcast from '@/components/Podcast';
+import Modal from '@/components/Modal';
 
 const PodcastProfilePage = () => {
   const { currentUser } = auth;
   if (!currentUser) return null;
 
+  const router = useRouter();
+
   const params = useParams<{ podcastId: string }>();
   const [isPodcastSubscribed, setIsPodcastSubscribed] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [isNotification, setIsNotification] = useState(false);
 
   const { data: podcastUserSubscription } = useSWR(
     `podcastUserSubscription_${params.podcastId}_${currentUser.uid}`,
@@ -77,11 +85,69 @@ const PodcastProfilePage = () => {
     }
   };
 
+  const openModal = (title: string, message: string, notification = false) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setIsNotification(notification);
+    setIsModalOpen(true);
+  };
+
+  const closeNotification = (redirect: string) => {
+    setIsModalOpen(false);
+    router.push(redirect);
+  };
+
+  const handleDeletePodcast = async () => {
+    try {
+      await deletePodcast(podcastData.id);
+      openModal('Notification', 'Podcast deleted successfully.', true);
+    } catch (error) {
+      console.error(error);
+      openModal(
+        'Error',
+        'Failed to delete the podcast. Please try again.',
+        true
+      );
+    }
+  };
+
   return (
     <div className="flex flex-col w-full gap-10">
-      <div className="flex flex-col gap-3 md:px-4">
-        <h1 className="page__title">{podcastData.title}</h1>
-        <h2 className="text-md">{podcastData.host}</h2>
+      <div className="flex justify-between">
+        <div className="flex flex-col gap-3 md:px-4">
+          <h1 className="page__title">{podcastData.title}</h1>
+          <h2 className="text-md">{podcastData.host}</h2>
+        </div>
+        {podcastData?.userId === currentUser.uid && (
+          <>
+            <button
+              onClick={() =>
+                openModal(
+                  'Confirm Deletion',
+                  `Are you sure you want to delete the podcast "${podcastData.title}"? This action cannot be undone.`,
+                  false
+                )
+              }
+              className="px-4 py-2 text-white bg-red-500 rounded h-10 hover:bg-red-600"
+            >
+              Delete Podcast
+            </button>
+          </>
+        )}
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={
+            isNotification
+              ? () => closeNotification('/dashboard/podcasts')
+              : () => setIsModalOpen(false)
+          }
+          title={modalTitle}
+          message={modalMessage}
+          onConfirm={!isNotification ? handleDeletePodcast : undefined}
+          confirmText={!isNotification ? 'Delete' : undefined}
+          cancelText={isNotification ? 'Close' : 'Cancel'}
+        />
       </div>
       <div className="flex gap-8 2xl:gap-6 flex-wrap">
         <div className="flex flex-col xl:flex-row 2xl:w-2/3 w-full gap-8 2xl:gap-6 ">

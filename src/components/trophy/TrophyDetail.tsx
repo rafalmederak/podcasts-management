@@ -14,6 +14,7 @@ import {
 //services
 import {
   addEpisodeUserTrophie,
+  deleteTrophy,
   getUserTrophy,
 } from '@/services/trophies.service';
 import { addTrophyLevelToUser } from '@/services/users.service';
@@ -21,24 +22,33 @@ import { User } from 'firebase/auth';
 import TrophyBody from './TrophyBody';
 import TrophyQuestionSection from './TrophyQuestionSection';
 import { mutate } from 'swr';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import Modal from '../Modal';
 
 type TaskDetailProps = {
   trophy: Trophy;
   setIsTrophyDetailOpen: Dispatch<SetStateAction<boolean>>;
   isUserTrophy: (itemId: Trophy['id']) => boolean | null;
   currentUser: User;
+  podcastDataUserId: string;
 };
 
 const TrophyDetail = ({
+  podcastDataUserId,
   trophy,
   setIsTrophyDetailOpen,
   isUserTrophy,
   currentUser,
 }: TaskDetailProps) => {
   const params = useParams<{ podcastId: string; episodeId: string }>();
+
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [userTrophy, setUserTrophy] = useState<UserTrophy | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [isNotification, setIsNotification] = useState(false);
 
   const handleRadioChange = (value: number) => {
     if (selectedAnswer !== value) {
@@ -76,6 +86,36 @@ const TrophyDetail = ({
     fetchUserTrophy();
   }, []);
 
+  const openModal = (title: string, message: string, notification = false) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setIsNotification(notification);
+    setIsModalOpen(true);
+  };
+
+  const closeNotification = () => {
+    setIsModalOpen(false);
+    setIsTrophyDetailOpen(false);
+  };
+
+  const podcastId = params.podcastId;
+  const episodeId = params.episodeId;
+
+  const handleDeleteTrophy = async () => {
+    try {
+      await deleteTrophy(trophy.id, { podcastId, episodeId });
+      openModal('Notification', 'Trophy deleted successfully.', true);
+      mutate(`episodes_${params.episodeId}`);
+    } catch (error) {
+      console.error(error);
+      openModal(
+        'Error',
+        'Failed to delete the trophy. Please try again.',
+        true
+      );
+    }
+  };
+
   return (
     <div className="max-w-[1920px] w-full flex 2xl:justify-end">
       <div className="fixed right-0 2xl:right-auto w-full md:w-[calc(100vw-212px)] 2xl:w-[38rem] flex flex-col h-full gap-4 bg-white z-10 top-[56px]  border-gray-100 border-l-2 rounded-sm px-8 py-6 md:px-6">
@@ -110,24 +150,54 @@ const TrophyDetail = ({
             userTrophy={userTrophy}
             handleRadioChange={handleRadioChange}
           />
-          {!isUserTrophy(trophy.id) && (
-            <button
-              onClick={() => finishTask(trophy.level)}
-              disabled={!selectedAnswer}
-              className={`${
-                !selectedAnswer
-                  ? 'bg-gray-200'
-                  : 'bg-green-200 hover:bg-green-300  transition-all'
-              } flex p-2 rounded-lg w-40 items-center justify-center `}
-            >
-              <CheckCircleIcon
-                className={`w-6 h-6  ${
-                  !selectedAnswer ? 'text-gray-400' : 'text-green-500'
-                }`}
-              />
-              <p className="ml-1">Finish task</p>
-            </button>
+          {!isUserTrophy(trophy.id) &&
+            podcastDataUserId !== currentUser.uid && (
+              <button
+                onClick={() => finishTask(trophy.level)}
+                disabled={!selectedAnswer}
+                className={`${
+                  !selectedAnswer
+                    ? 'bg-gray-200'
+                    : 'bg-green-200 hover:bg-green-300  transition-all'
+                } flex p-2 rounded-lg w-40 items-center justify-center `}
+              >
+                <CheckCircleIcon
+                  className={`w-6 h-6  ${
+                    !selectedAnswer ? 'text-gray-400' : 'text-green-500'
+                  }`}
+                />
+                <p className="ml-1">Finish task</p>
+              </button>
+            )}
+          {podcastDataUserId === currentUser.uid && (
+            <>
+              <button
+                onClick={() =>
+                  openModal(
+                    'Confirm Deletion',
+                    `Are you sure you want to delete the trophy "${trophy.title}"? This action cannot be undone.`,
+                    false
+                  )
+                }
+                className="px-4 py-2 text-white bg-red-500 rounded h-10 w-40 hover:bg-red-700"
+              >
+                Delete Trophy
+              </button>
+            </>
           )}
+          <Modal
+            isOpen={isModalOpen}
+            onClose={
+              isNotification
+                ? () => closeNotification()
+                : () => setIsModalOpen(false)
+            }
+            title={modalTitle}
+            message={modalMessage}
+            onConfirm={!isNotification ? handleDeleteTrophy : undefined}
+            confirmText={!isNotification ? 'Delete' : undefined}
+            cancelText={isNotification ? 'Close' : 'Cancel'}
+          />
         </div>
       </div>
     </div>

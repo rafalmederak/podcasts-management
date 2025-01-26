@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import Image from 'next/image';
 import { auth } from '@/firebase/firebaseConfig';
@@ -22,12 +22,17 @@ import TrophyDetail from '@/components/trophy/TrophyDetail';
 import { Trophy, UserTrophy } from '@/types/trophy';
 
 //services
-import { getEpisode, getEpisodeUserLike } from '@/services/episodes.service';
+import {
+  deleteEpisode,
+  getEpisode,
+  getEpisodeUserLike,
+} from '@/services/episodes.service';
 import { getPodcast } from '@/services/podcasts.service';
 import {
   getEpisodeTrophies,
   getEpisodeUserTrophies,
 } from '@/services/trophies.service';
+import Modal from '@/components/Modal';
 
 const EpisodePage = () => {
   const { currentUser } = auth;
@@ -35,9 +40,16 @@ const EpisodePage = () => {
 
   const params = useParams<{ podcastId: string; episodeId: string }>();
 
+  const router = useRouter();
+
   const [isEpisodeLiked, setIsEpisodeLiked] = useState(false);
   const [isTrophyDetailOpen, setIsTrophyDetailOpen] = useState(false);
   const [selectedTrophy, setSelectedTrophy] = useState<Trophy | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [isNotification, setIsNotification] = useState(false);
 
   const { data: trophiesData } = useSWR(`episodes_${params.episodeId}`, () =>
     getEpisodeTrophies(params.episodeId)
@@ -108,18 +120,75 @@ const EpisodePage = () => {
     return <div>Loading episode...</div>;
   }
 
+  const openModal = (title: string, message: string, notification = false) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setIsNotification(notification);
+    setIsModalOpen(true);
+  };
+
+  const closeNotification = (redirect: string) => {
+    setIsModalOpen(false);
+    router.push(redirect);
+  };
+
+  const handleDeleteEpisode = async () => {
+    try {
+      await deleteEpisode(params.episodeId, params.podcastId);
+      openModal('Notification', 'Episode deleted successfully.', true);
+    } catch (error) {
+      console.error(error);
+      openModal(
+        'Error',
+        'Failed to delete the episode. Please try again.',
+        true
+      );
+    }
+  };
+
   return (
     <div className="flex w-full flex-col items-start gap-6">
       {isTrophyDetailOpen && (
         <div className="fixed top-[56px] left-[208px] right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm z-10"></div>
       )}
-      <Link
-        href={`/dashboard/podcasts/${params.podcastId}`}
-        className="inline-flex items-center gap-2 md:mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
-      >
-        <ArrowLeftCircleIcon className="w-6 h-6 text-defaultBlue-300 cursor-pointer" />
-        <h1 className="text-lg font-medium">{podcastData.title}</h1>
-      </Link>
+      <div className="flex justify-between items-center w-full">
+        <Link
+          href={`/dashboard/podcasts/${params.podcastId}`}
+          className="inline-flex items-center gap-2 md:mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
+        >
+          <ArrowLeftCircleIcon className="w-6 h-6 text-defaultBlue-300 cursor-pointer" />
+          <h1 className="text-lg font-medium">{podcastData.title}</h1>
+        </Link>
+        {podcastData.userId === currentUser.uid && (
+          <>
+            <button
+              onClick={() =>
+                openModal(
+                  'Confirm Deletion',
+                  `Are you sure you want to delete the episode "${episodeData?.title}"? This action cannot be undone.`,
+                  false
+                )
+              }
+              className="px-4 py-2 text-white bg-red-500 rounded h-10 hover:bg-red-700"
+            >
+              Delete Episode
+            </button>
+          </>
+        )}
+      </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={
+          isNotification
+            ? () => closeNotification(`/dashboard/podcasts/${params.podcastId}`)
+            : () => setIsModalOpen(false)
+        }
+        title={modalTitle}
+        message={modalMessage}
+        onConfirm={!isNotification ? handleDeleteEpisode : undefined}
+        confirmText={!isNotification ? 'Delete' : undefined}
+        cancelText={isNotification ? 'Close' : 'Cancel'}
+      />
       <div className="flex flex-col 2xl:flex-row gap-8 2xl:gap-6 w-full">
         <Episode
           episodeData={episodeData}
@@ -187,6 +256,7 @@ const EpisodePage = () => {
                 ))}
               {isTrophyDetailOpen && selectedTrophy && (
                 <TrophyDetail
+                  podcastDataUserId={podcastData.userId}
                   currentUser={currentUser}
                   trophy={selectedTrophy}
                   setIsTrophyDetailOpen={setIsTrophyDetailOpen}

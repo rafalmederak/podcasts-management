@@ -3,6 +3,7 @@ import { Trophy, UserTrophy } from '@/types/trophy';
 import { User } from 'firebase/auth';
 import {
   collection,
+  deleteDoc,
   doc,
   getDocs,
   query,
@@ -13,6 +14,7 @@ import {
 import { mutate } from 'swr';
 import { v4 as uuidv4 } from 'uuid';
 import { getEpisode } from './episodes.service';
+import { deleteObject, getStorage, listAll, ref } from 'firebase/storage';
 
 export async function getEpisodeTrophies(episodeId: string) {
   const q = query(
@@ -146,4 +148,38 @@ export async function addTrophy({
     goodAnswerIndex,
     createdAt: Timestamp.now(),
   });
+}
+
+export async function deleteTrophy(
+  trophyId: string,
+  params: { podcastId: string; episodeId: string }
+) {
+  const userTrophiesQuery = query(
+    collection(db, 'userTrophies'),
+    where('trophyId', '==', trophyId)
+  );
+  const userTrophiesSnapshot = await getDocs(userTrophiesQuery);
+
+  const deleteUserTrophiesPromises = userTrophiesSnapshot.docs.map((doc) =>
+    deleteDoc(doc.ref)
+  );
+  await Promise.all(deleteUserTrophiesPromises);
+
+  const trophyRef = doc(db, 'trophies', trophyId);
+  await deleteDoc(trophyRef);
+
+  const storage = getStorage();
+  const trophyFolderPath = `podcasts/${params.podcastId}/episodes/${params.episodeId}/trophies/${trophyId}`;
+  const trophyFolderRef = ref(storage, trophyFolderPath);
+
+  try {
+    const listResult = await listAll(trophyFolderRef);
+
+    const deleteFilesPromises = listResult.items.map((fileRef) =>
+      deleteObject(fileRef)
+    );
+    await Promise.all(deleteFilesPromises);
+  } catch (error) {
+    console.error(error);
+  }
 }
