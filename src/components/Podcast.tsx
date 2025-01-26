@@ -29,7 +29,7 @@ const Podcast = ({
       } ${creation && 'pr-4'}`}
     >
       <div className="flex flex-col items-start gap-3">
-        <div className="w-full h-80 relative">
+        <div className="w-full max-w-[30rem] 2xl:max-w-full h-80 relative">
           {photo ? (
             <Image
               src={photo}

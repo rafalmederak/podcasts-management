@@ -163,11 +163,11 @@ const AddTrophy = () => {
           {episodeData?.title}
         </h3>
       </div>
-      <div className="flex gap-20">
+      <div className="flex flex-col 2xl:flex-row w-full gap-10 2xl:gap-20">
         <FormProvider {...methods}>
           <form
             onSubmit={handleSubmit(createTrophy)}
-            className="flex flex-col w-2/3 gap-4"
+            className="flex flex-col w-full 2xl:w-2/3 gap-4"
           >
             <Controller
               name="title"
@@ -293,7 +293,7 @@ const AddTrophy = () => {
                                 goodAnswerIndex === index
                                   ? 'bg-green-500 text-white'
                                   : 'bg-white'
-                              } rounded-sm border border-1 p-2 w-60`}
+                              } rounded-sm border border-1 p-2 w-40 2xl:w-60`}
                             >
                               {goodAnswerIndex === index
                                 ? 'Good Answer'
@@ -337,7 +337,7 @@ const AddTrophy = () => {
             </div>
           </form>
         </FormProvider>
-        <div className="flex flex-col w-1/3 gap-4">
+        <div className="flex flex-col 2xl:w-1/3 gap-4">
           <TrophyMain creation={true} trophy={trophy} />
           <TrophyComponent creation={true} trophy={trophy} />
         </div>

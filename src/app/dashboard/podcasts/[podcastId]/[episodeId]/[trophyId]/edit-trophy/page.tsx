@@ -182,11 +182,11 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
           {trophy.title}
         </h3>
       </div>
-      <div className="flex gap-20">
+      <div className="flex flex-col 2xl:flex-row w-full gap-10 2xl:gap-20">
         <FormProvider {...methods}>
           <form
             onSubmit={handleSubmit(editTrophy)}
-            className="flex flex-col w-2/3 gap-4"
+            className="flex flex-col w-full 2xl:w-2/3 gap-4"
           >
             <Controller
               name="title"
@@ -200,9 +200,9 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
                 />
               )}
             />
-            <div className="flex items-center gap-4">
-              <div className="flex hover:scale-105 transition-all">
-                <div className="w-12 h-12 relative">
+            <div className="flex flex-col 2xl:flex-row items-start 2xl:items-center gap-4 w-full">
+              <div className="flex hover:scale-105 transition-all w-full md:w-60">
+                <div className="w-1/2 lg:w-12 h-12 relative">
                   <Image
                     src={trophyData.photo}
                     alt="Trophy"
@@ -221,7 +221,7 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
                     keepExistingPhoto
                       ? 'bg-defaultBlue-300 text-white'
                       : 'bg-white border'
-                  }  w-32 text-md  rounded-r-md `}
+                  }  w-full 2xl:w-32 text-md  rounded-r-md `}
                 >
                   Keep existing
                 </button>
@@ -351,7 +351,7 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
                                 goodAnswerIndex === index
                                   ? 'bg-green-500 text-white'
                                   : 'bg-white'
-                              } rounded-sm border border-1 p-2 w-60`}
+                              } rounded-sm border border-1 p-2 w-40 2xl:w-60`}
                             >
                               {goodAnswerIndex === index
                                 ? 'Good Answer'
@@ -391,7 +391,7 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
             </div>
           </form>
         </FormProvider>
-        <div className="flex flex-col w-1/3 gap-4">
+        <div className="flex flex-col w-full 2xl:w-1/3 gap-4">
           <TrophyMain creation={true} trophy={trophy} />
           <TrophyComponent creation={true} trophy={trophy} />
         </div>
