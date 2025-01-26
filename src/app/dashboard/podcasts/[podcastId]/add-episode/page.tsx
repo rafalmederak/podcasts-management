@@ -137,8 +137,8 @@ const AddEpisode = () => {
           {podcastData.title}
         </h3>
       </div>
-      <div className="flex w-full gap-20  h-[78vh]">
-        <div className="flex flex-col gap-6 w-3/5">
+      <div className="flex flex-col 2xl:flex-row w-full gap-10 2xl:gap-20 2xl:h-[78vh]">
+        <div className="flex flex-col gap-6 w-full 2xl:w-3/5">
           <FormProvider {...methods}>
             <form
               onSubmit={handleSubmit(createEpisode)}
@@ -320,7 +320,7 @@ const AddEpisode = () => {
             </form>
           </FormProvider>
         </div>
-        <div className="flex flex-col gap-6 w-2/5">
+        <div className="flex flex-col gap-6 2xl:w-2/5">
           <Episode episodeData={episodeData} creation={true} />
         </div>
       </div>

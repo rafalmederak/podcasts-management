@@ -151,7 +151,7 @@ const EpisodePage = () => {
       {isTrophyDetailOpen && (
         <div className="fixed top-[56px] left-[208px] right-0 bottom-0 bg-black bg-opacity-10 backdrop-blur-sm z-10"></div>
       )}
-      <div className="flex justify-between items-center w-full">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 w-full">
         <Link
           href={`/dashboard/podcasts/${params.podcastId}`}
           className="inline-flex items-center gap-2 md:mx-4 py-1 pl-2 pr-3 rounded-md hover:bg-defaultBlue-50 transition-all"
@@ -160,10 +160,10 @@ const EpisodePage = () => {
           <h1 className="text-lg font-medium">{podcastData.title}</h1>
         </Link>
         {podcastData.userId === currentUser.uid && (
-          <div className="flex gap-4 items-center px-4">
+          <div className="flex gap-4 items-center md:px-4">
             <Link
               href={`/dashboard/podcasts/${params.podcastId}/${params.episodeId}/edit-episode`}
-              className=" bg-defaultBlue-300 w-32 text-center text-white px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
+              className=" bg-defaultBlue-300 w-32 text-center text-white text-sm px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
             >
               Edit Episode
             </Link>
@@ -175,7 +175,7 @@ const EpisodePage = () => {
                   false
                 )
               }
-              className="px-4 py-2 text-white bg-red-500 rounded h-10 hover:bg-red-700"
+              className="px-3 py-2 text-white text-sm bg-red-500 rounded hover:bg-red-700"
             >
               Delete Episode
             </button>
@@ -226,7 +226,7 @@ const EpisodePage = () => {
                   <div
                     onClick={() => handleTrophyClick(item)}
                     key={item.id}
-                    className={`flex w-full relative border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all ${
+                    className={`flex w-full relative border rounded h-40 p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all ${
                       isUserTrophy(item.id)
                         ? 'bg-green-50 border-green-200 hover:bg-green-100'
                         : ''
@@ -258,7 +258,7 @@ const EpisodePage = () => {
                         }`}
                       />
 
-                      <p className="line-clamp-4">{item.description}</p>
+                      <p className="line-clamp-2">{item.description}</p>
                     </div>
                   </div>
                 ))}

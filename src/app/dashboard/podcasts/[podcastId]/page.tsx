@@ -113,16 +113,16 @@ const PodcastProfilePage = () => {
 
   return (
     <div className="flex flex-col w-full gap-10">
-      <div className="flex justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row justify-between">
         <div className="flex flex-col gap-3 md:px-4">
           <h1 className="page__title">{podcastData.title}</h1>
           <h2 className="text-md">{podcastData.host}</h2>
         </div>
         {podcastData?.userId === currentUser.uid && (
-          <div className="flex gap-4 items-center px-4">
+          <div className="flex gap-4 items-center md:px-4">
             <Link
               href={`/dashboard/podcasts/${params.podcastId}/edit-podcast`}
-              className=" bg-defaultBlue-300 w-32 text-center text-white px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
+              className=" bg-defaultBlue-300 w-32 text-center text-sm text-white px-3 py-2 rounded-md shadow-md hover:bg-defaultBlue-500"
             >
               Edit Podcast
             </Link>
@@ -134,7 +134,7 @@ const PodcastProfilePage = () => {
                   false
                 )
               }
-              className="px-4 py-2 text-white bg-red-500 rounded h-10 hover:bg-red-600"
+              className="px-3 py-2 text-white text-sm bg-red-500 rounded hover:bg-red-600"
             >
               Delete Podcast
             </button>
@@ -186,9 +186,9 @@ const PodcastProfilePage = () => {
                     <Link
                       href={`/dashboard/podcasts/${params.podcastId}/${item.id}`}
                       key={item.id}
-                      className="flex w-full border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all"
+                      className="flex h-48 w-full border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all"
                     >
-                      <div className="w-40 h-full">
+                      <div className="w-40 h-40">
                         <div className="w-40 h-full relative">
                           <Image
                             src={item.photo}

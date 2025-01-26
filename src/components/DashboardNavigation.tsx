@@ -50,11 +50,11 @@ export const dashboardNavLinks: NavItem[] = [
 ];
 
 export const dashboardSupportLinks = [
-  {
-    title: 'Settings',
-    icon: Cog6ToothIcon,
-    link: dashboardLink + '/settings',
-  },
+  // {
+  //   title: 'Settings',
+  //   icon: Cog6ToothIcon,
+  //   link: dashboardLink + '/settings',
+  // },
   {
     title: 'Help',
     icon: QuestionMarkCircleIcon,

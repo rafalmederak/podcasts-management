@@ -72,8 +72,8 @@ const CreatePodcast = () => {
   return (
     <div className="page__responsive">
       <h2 className="page__title">Create Podcast</h2>
-      <div className="flex w-full gap-20 h-[78vh]">
-        <div className="flex flex-col gap-6 w-3/5">
+      <div className="flex flex-col 2xl:flex-row w-full gap-10 2xl:gap-20 2xl:h-[78vh]">
+        <div className="flex flex-col gap-6 w-full 2xl:w-3/5">
           <h3 className="text-lg font-medium">Podcast</h3>
           <FormProvider {...methods}>
             <form
@@ -162,7 +162,7 @@ const CreatePodcast = () => {
             </form>
           </FormProvider>
         </div>
-        <div className="flex flex-col gap-6 w-2/5">
+        <div className="flex flex-col gap-6 w-full 2xl:w-2/5">
           <div className="flex flex-col gap-3">
             <h1 className="page__title">
               {methods.watch('title') ? (

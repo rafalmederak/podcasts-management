@@ -115,6 +115,12 @@ const LoginPage = () => {
             Register
           </Link>
         </div>
+        <div className="flex gap-1">
+          <p>Forgot password?</p>
+          <Link href={'/reset-password'} className="text-defaultBlue-400">
+            Reset password
+          </Link>
+        </div>
       </div>
     </div>
   );

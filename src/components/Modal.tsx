@@ -17,6 +17,8 @@ interface ModalProps {
   onConfirm?: () => void;
   confirmText?: string;
   cancelText?: string;
+  confirmColor?: string;
+  cancelButton?: boolean;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -27,6 +29,8 @@ const Modal: React.FC<ModalProps> = ({
   onConfirm,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
+  cancelButton = true,
+  confirmColor,
 }) => {
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -69,19 +73,25 @@ const Modal: React.FC<ModalProps> = ({
                   {onConfirm && (
                     <button
                       type="button"
-                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700"
+                      className={`px-4 py-2 text-sm font-medium text-white ${
+                        confirmColor
+                          ? confirmColor
+                          : 'bg-red-600 hover:bg-red-700'
+                      } rounded `}
                       onClick={onConfirm}
                     >
                       {confirmText}
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-                    onClick={onClose}
-                  >
-                    {cancelText}
-                  </button>
+                  {cancelButton && (
+                    <button
+                      type="button"
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+                      onClick={onClose}
+                    >
+                      {cancelText}
+                    </button>
+                  )}
                 </div>
               </DialogPanel>
             </TransitionChild>

@@ -158,8 +158,8 @@ const EditEpisode = ({ episodeData }: { episodeData: EpisodeType }) => {
           {episodeData.title}
         </h3>
       </div>
-      <div className="flex w-full gap-20  h-[78vh]">
-        <div className="flex flex-col gap-6 w-3/5">
+      <div className="flex flex-col 2xl:flex-row w-full gap-10 2xl:gap-20 2xl:h-[78vh]">
+        <div className="flex flex-col gap-6 w-full 2xl:w-3/5">
           <FormProvider {...methods}>
             <form
               onSubmit={handleSubmit(editEpisode)}
@@ -177,9 +177,9 @@ const EditEpisode = ({ episodeData }: { episodeData: EpisodeType }) => {
                   />
                 )}
               />
-              <div className="flex items-center gap-4 w-full">
-                <div className="flex hover:scale-105 transition-all">
-                  <div className="w-12 h-12 relative">
+              <div className="flex flex-col 2xl:flex-row items-start 2xl:items-center gap-4 w-full">
+                <div className="flex hover:scale-105 transition-all w-full md:w-60">
+                  <div className="w-1/2 lg:w-12 h-12 relative">
                     <Image
                       src={episodeData.photo}
                       alt="Trophy"
@@ -198,7 +198,7 @@ const EditEpisode = ({ episodeData }: { episodeData: EpisodeType }) => {
                       keepExistingPhoto
                         ? 'bg-defaultBlue-300 text-white'
                         : 'bg-white border'
-                    }  w-32 text-md  rounded-r-md `}
+                    }  w-full 2xl:w-32 text-md  rounded-r-md `}
                   >
                     Keep existing
                   </button>
@@ -278,9 +278,9 @@ const EditEpisode = ({ episodeData }: { episodeData: EpisodeType }) => {
                 )}
               />
 
-              <div className="flex items-center gap-4 w-full">
-                <div className="flex hover:scale-105 transition-all">
-                  <div className="w-12 h-12 flex items-center justify-center border rounded-l-md">
+              <div className="flex flex-col 2xl:flex-row items-start 2xl:items-center gap-4 w-full">
+                <div className="flex hover:scale-105 transition-all w-full md:w-60">
+                  <div className="w-1/2 lg:w-12 h-12 flex items-center justify-center border rounded-l-md">
                     <SpeakerWaveIcon className="w-6 h-6" />
                   </div>
 
@@ -294,7 +294,7 @@ const EditEpisode = ({ episodeData }: { episodeData: EpisodeType }) => {
                       keepExistingAudio
                         ? 'bg-defaultBlue-300 text-white'
                         : 'bg-white border'
-                    }  w-32 text-md  rounded-r-md `}
+                    }  w-full 2xl:w-32 text-md  rounded-r-md `}
                   >
                     Keep existing
                   </button>
@@ -406,7 +406,7 @@ const EditEpisode = ({ episodeData }: { episodeData: EpisodeType }) => {
             </form>
           </FormProvider>
         </div>
-        <div className="flex flex-col gap-6 w-2/5">
+        <div className="flex flex-col gap-6 w-full 2xl:w-2/5">
           <Episode episodeData={episode} creation={true} />
         </div>
       </div>
