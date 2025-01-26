@@ -226,7 +226,7 @@ const EpisodePage = () => {
                   <div
                     onClick={() => handleTrophyClick(item)}
                     key={item.id}
-                    className={`flex w-full relative border rounded p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all ${
+                    className={`flex w-full relative border rounded h-40 p-4 gap-4 cursor-pointer hover:bg-gray-100 transition-all ${
                       isUserTrophy(item.id)
                         ? 'bg-green-50 border-green-200 hover:bg-green-100'
                         : ''
@@ -258,7 +258,7 @@ const EpisodePage = () => {
                         }`}
                       />
 
-                      <p className="line-clamp-4">{item.description}</p>
+                      <p className="line-clamp-2">{item.description}</p>
                     </div>
                   </div>
                 ))}
