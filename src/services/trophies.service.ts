@@ -4,18 +4,27 @@ import { User } from 'firebase/auth';
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getDocs,
   query,
   setDoc,
   Timestamp,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import { mutate } from 'swr';
-import { v4 as uuidv4 } from 'uuid';
 import { getEpisode } from './episodes.service';
 import { deleteObject, getStorage, listAll, ref } from 'firebase/storage';
+
+type UserTrophyData = {
+  trophyId: string;
+  userId: string;
+  answer: number;
+  timestamp: Timestamp;
+  blockedTime?: Timestamp;
+};
 
 export async function getEpisodeTrophies(episodeId: string) {
   const q = query(
@@ -60,15 +69,32 @@ export async function addEpisodeUserTrophie(
   userId: string,
   answer: number
 ) {
-  const id = uuidv4();
-  const likeRef = doc(db, 'userTrophies', id);
+  const trophyRef = doc(db, 'userTrophies', `${trophyId}_${userId}`);
 
-  await setDoc(likeRef, {
+  const trophyDoc = await getDoc(trophyRef);
+
+  const data: UserTrophyData = {
     trophyId,
     userId,
     answer,
-    createdAt: Timestamp.now(),
-  });
+    timestamp: Timestamp.now(),
+  };
+
+  if (answer === -1) {
+    data['blockedTime'] = Timestamp.now();
+  } else {
+    if (trophyDoc.exists()) {
+      await updateDoc(trophyRef, {
+        blockedTime: deleteField(),
+      });
+    }
+  }
+
+  if (trophyDoc.exists()) {
+    await updateDoc(trophyRef, data);
+  } else {
+    await setDoc(trophyRef, data);
+  }
 
   mutate(`userTrophies_${userId}`);
 }

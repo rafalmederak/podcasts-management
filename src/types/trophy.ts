@@ -21,4 +21,5 @@ export type UserTrophy = {
   userId: string;
   answer?: number;
   timestamp: Timestamp;
+  blockedTime?: Timestamp;
 };

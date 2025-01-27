@@ -7,6 +7,8 @@ type TrophyQuestionSectionProps = {
   selectedAnswer?: any;
   userTrophy?: any;
   handleRadioChange?: any;
+  isBlocked?: boolean;
+  isUserTrophy?: (itemId: Trophy['id']) => boolean | null;
 };
 
 const TrophyQuestionSection = ({
@@ -15,6 +17,8 @@ const TrophyQuestionSection = ({
   selectedAnswer,
   userTrophy,
   handleRadioChange,
+  isBlocked,
+  isUserTrophy,
 }: TrophyQuestionSectionProps) => {
   return (
     <div key={trophy.id} className="flex flex-col gap-6">
@@ -27,23 +31,31 @@ const TrophyQuestionSection = ({
             <label
               key={index}
               className={`${
-                selectedAnswer === option || userTrophy?.answer == option
+                selectedAnswer === index || userTrophy?.answer == index
                   ? 'bg-blue-400'
                   : 'bg-blue-200'
               } min-w-32  py-2 px-4 min-h-8 flex items-center justify-center rounded-sm transition-all ${
-                !userTrophy?.answer && !creation
+                !creation &&
+                selectedAnswer >= 0 &&
+                !isBlocked &&
+                !isUserTrophy?.(trophy.id)
                   ? 'hover:bg-blue-400 cursor-pointer '
                   : ''
               }`}
             >
               <input
-                disabled={!!userTrophy?.answer || creation}
+                disabled={
+                  creation ||
+                  selectedAnswer < 0 ||
+                  isBlocked ||
+                  isUserTrophy?.(trophy.id) === true
+                }
                 type="radio"
                 className="hidden"
                 name={`input-${index}`}
                 value={option}
-                onChange={() => handleRadioChange(option)}
-                checked={selectedAnswer === option}
+                onChange={() => handleRadioChange(index)}
+                checked={selectedAnswer === index}
                 required
               />
               {option}

@@ -80,7 +80,9 @@ const EpisodePage = () => {
     if (!userTrophiesData) return null;
     return userTrophiesData.some(
       (trophy) =>
-        trophy.userId === currentUser?.uid && trophy.trophyId === itemId
+        trophy.userId === currentUser?.uid &&
+        trophy.trophyId === itemId &&
+        trophy.answer !== -1
     );
   };
 
