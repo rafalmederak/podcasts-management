@@ -58,7 +58,7 @@ const PodcastsPage = () => {
               <div className="w-full h-72 relative">
                 <Image
                   src={item.photo}
-                  alt="Demo photo"
+                  alt="Podcast"
                   fill={true}
                   className="rounded-lg shadow-md object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

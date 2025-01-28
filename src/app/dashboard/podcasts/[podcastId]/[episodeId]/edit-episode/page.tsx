@@ -182,7 +182,7 @@ const EditEpisode = ({ episodeData }: { episodeData: EpisodeType }) => {
                   <div className="w-1/2 lg:w-12 h-12 relative">
                     <Image
                       src={episodeData.photo}
-                      alt="Trophy"
+                      alt="Episode"
                       fill={true}
                       className="rounded-l-md shadow-md object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
