@@ -83,6 +83,7 @@ const DashboardNavigation = () => {
         {dashboardSupportLinks.map((item) => (
           <NavLink item={item} pathname={pathname} key={item.link} />
         ))}
+        <p className="ml-2 text-sm">v1.0.0</p>
       </div>
     </div>
   );
