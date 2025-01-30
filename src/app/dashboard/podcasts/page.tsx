@@ -43,7 +43,7 @@ const PodcastsPage = () => {
         </Link>
       </div>
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <div className="flex flex-wrap gap-12 w-full overflow-y-auto">
+      <div className="flex flex-wrap gap-12 w-full">
         {podcastsIsLoading || !podcastsData ? (
           <p>Loading podcasts...</p>
         ) : filteredData.length === 0 ? (
@@ -53,7 +53,7 @@ const PodcastsPage = () => {
             <Link
               key={item.id}
               href={`/dashboard/podcasts/${item.id}`}
-              className="flex flex-col items-start justify-start w-full sm:w-72 hover:scale-95 cursor-pointer transition-all"
+              className="flex flex-col items-start justify-start w-full sm:w-72 hover:scale-105 cursor-pointer transition-all"
             >
               <div className="w-full h-72 relative">
                 <Image
