@@ -25,6 +25,8 @@ import { mutate } from 'swr';
 import { useParams, useRouter } from 'next/navigation';
 import Modal from '../Modal';
 import Link from 'next/link';
+import LoadingComponent from '../Loading';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 type TaskDetailProps = {
   trophy: Trophy;
@@ -42,6 +44,8 @@ const TrophyDetail = ({
   currentUser,
 }: TaskDetailProps) => {
   const params = useParams<{ podcastId: string; episodeId: string }>();
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [isBlockedLoading, setIsBlockedLoading] = useState(true);
 
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [userTrophy, setUserTrophy] = useState<UserTrophy | null>(null);
@@ -65,27 +69,62 @@ const TrophyDetail = ({
     }
   };
 
-  const finishTask = (trophyLevel: number) => {
-    achieveTask();
-    addTrophyLevelToUser(currentUser.uid, trophyLevel);
+  const finishTask = async (trophyLevel: number) => {
+    if (isBlocked || selectedAnswer == null) {
+      return;
+    }
 
-    mutate(`userTrophies_${currentUser.uid}_${params.episodeId}`);
+    if (trophy.goodAnswerIndex === selectedAnswer) {
+      try {
+        const userTrophyData = await getUserTrophy(trophy.id, currentUser.uid);
 
-    setIsTrophyDetailOpen(false);
+        const trophyData =
+          userTrophyData && userTrophyData.answer === selectedAnswer;
+
+        await addEpisodeUserTrophie(trophy.id, currentUser.uid, selectedAnswer);
+
+        if (!trophyData) {
+          addTrophyLevelToUser(currentUser.uid, trophyLevel);
+        }
+
+        mutate(`userTrophies_${currentUser.uid}_${params.episodeId}`);
+        setIsTrophyDetailOpen(false);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      await addEpisodeUserTrophie(trophy.id, currentUser.uid, -1);
+      setSelectedAnswer(-1);
+      setIsBlocked(true);
+    }
   };
 
   useEffect(() => {
     const fetchUserTrophy = async () => {
+      setIsBlockedLoading(true);
       try {
         const userTrophyData = await getUserTrophy(trophy.id, currentUser.uid);
         setUserTrophy(userTrophyData);
+
+        if (userTrophyData?.blockedTime) {
+          const blockedTime = userTrophyData.blockedTime.toDate();
+          const now = new Date();
+
+          //set one day of blocked time
+          if (now < new Date(blockedTime.getTime() + 24 * 60 * 60 * 1000)) {
+            setIsBlocked(true);
+          } else {
+            setIsBlocked(false);
+          }
+        }
       } catch (error) {
         console.error(error);
       }
+      setIsBlockedLoading(false);
     };
 
     fetchUserTrophy();
-  }, []);
+  }, [trophy.id, currentUser.uid]);
 
   const openModal = (title: string, message: string, notification = false) => {
     setModalTitle(title);
@@ -150,25 +189,59 @@ const TrophyDetail = ({
             selectedAnswer={selectedAnswer}
             userTrophy={userTrophy}
             handleRadioChange={handleRadioChange}
+            isBlocked={isBlocked}
+            isUserTrophy={isUserTrophy}
           />
           {!isUserTrophy(trophy.id) &&
             podcastDataUserId !== currentUser.uid && (
-              <button
-                onClick={() => finishTask(trophy.level)}
-                disabled={!selectedAnswer}
-                className={`${
-                  !selectedAnswer
-                    ? 'bg-gray-200'
-                    : 'bg-green-200 hover:bg-green-300  transition-all'
-                } flex p-2 rounded-lg w-40 items-center justify-center `}
-              >
-                <CheckCircleIcon
-                  className={`w-6 h-6  ${
-                    !selectedAnswer ? 'text-gray-400' : 'text-green-500'
-                  }`}
-                />
-                <p className="ml-1">Finish task</p>
-              </button>
+              <div className="flex flex-col gap-4">
+                {!isBlocked && (
+                  <div className="flex items-center gap-1 bg-slate-100 p-2 rounded-md">
+                    <InformationCircleIcon className="w-5 h-5" />
+                    <p className="text-sm">
+                      If you choose the wrong answer, you can choose again in 1
+                      day.
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={() => finishTask(trophy.level)}
+                  disabled={isBlocked || selectedAnswer! < 0}
+                  className={`${
+                    isBlockedLoading || isBlocked || selectedAnswer! < 0
+                      ? 'bg-gray-200'
+                      : 'bg-green-200 hover:bg-green-300  transition-all'
+                  } flex p-2 rounded-lg w-40 items-center justify-center `}
+                >
+                  {!isBlockedLoading && (
+                    <CheckCircleIcon
+                      className={`w-6 h-6  ${
+                        isBlocked || selectedAnswer! < 0
+                          ? 'text-gray-400'
+                          : 'text-green-500'
+                      }`}
+                    />
+                  )}
+                  <p className="ml-1">
+                    {isBlockedLoading ? (
+                      <LoadingComponent height="full" />
+                    ) : isBlocked ? (
+                      'Blocked'
+                    ) : (
+                      'Finish task'
+                    )}
+                  </p>
+                </button>
+                {isBlocked && (
+                  <div className="flex items-center gap-1 bg-slate-100 p-2 rounded-md">
+                    <InformationCircleIcon className="w-5 h-5 text-red-500" />
+                    <p className="text-sm text-red-500">
+                      You chose the wrong answer. You can choose the answer
+                      again in 1 day.
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
           {podcastDataUserId === currentUser.uid && (
             <div className="flex gap-4">

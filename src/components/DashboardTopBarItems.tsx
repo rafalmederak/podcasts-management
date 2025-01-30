@@ -33,7 +33,7 @@ const DashboardTopBarItems = ({ handleSignOut }: TopBarItemsProps) => {
         <div className="relative w-8 h-8 rounded-md shadow-md">
           <Image
             src={currentUser?.photoURL}
-            alt="User photo"
+            alt="User"
             fill={true}
             className="rounded-lg object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

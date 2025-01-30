@@ -58,7 +58,9 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
   }>();
 
   const [photoURL, setPhotoURL] = useState<string>(trophyData.photo);
-  const [goodAnswerIndex, setGoodAnswerIndex] = useState<number | null>(0);
+  const [goodAnswerIndex, setGoodAnswerIndex] = useState<number | null>(
+    trophyData.goodAnswerIndex ? trophyData.goodAnswerIndex : 0
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [keepExistingPhoto, setKeepExistingPhoto] = useState(true);
 
@@ -75,7 +77,7 @@ const EditTrophy = ({ trophyData }: { trophyData: Trophy }) => {
         type: 'radio',
         radioOptions: trophyData?.task.radioOptions,
       },
-      goodAnswerIndex: 0,
+      goodAnswerIndex: trophyData.goodAnswerIndex,
     },
   });
 

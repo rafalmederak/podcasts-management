@@ -192,7 +192,7 @@ const PodcastProfilePage = () => {
                         <div className="w-40 h-full relative">
                           <Image
                             src={item.photo}
-                            alt="Demo photo"
+                            alt="Episode"
                             fill={true}
                             className="rounded-lg shadow-md object-cover"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -236,7 +236,7 @@ const PodcastProfilePage = () => {
                         {item.photoURL ? (
                           <Image
                             src={item.photoURL}
-                            alt="Demo photo"
+                            alt="User"
                             fill={true}
                             className="rounded-md shadow-md object-cover"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

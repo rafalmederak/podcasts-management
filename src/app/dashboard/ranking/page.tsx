@@ -83,7 +83,7 @@ const RankingPage = () => {
                       <div className="w-10 h-10 relative">
                         <Image
                           src={item.photoURL}
-                          alt="Podcast"
+                          alt="User"
                           fill={true}
                           className="rounded-lg shadow-md object-cover"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

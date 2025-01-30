@@ -77,6 +77,7 @@ export async function getPodcastRanking({
           .firestore()
           .collection('userTrophies')
           .where('trophyId', '==', episodeTrophy.id)
+          .where('answer', '>=', 0)
           .get();
 
         userTrophies.forEach((doc) => {

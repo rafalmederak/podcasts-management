@@ -74,12 +74,15 @@ const DashboardTopBar = () => {
         >
           <div className="flex flex-col gap-4 bg-white rounded-lg shadow-lg ring-1 ring-slate-300 p-5 h-[calc(100vh-1rem)] lg:h-auto overflow-y-auto">
             <div className="flex w-full justify-between">
-              <Image
-                src={Logo}
-                alt="logo"
-                priority={true}
-                className="md:hidden w-8 h-8 rounded-lg drop-shadow-lg shadow-black"
-              />
+              <div className="flex items-center">
+                <Image
+                  src={Logo}
+                  alt="logo"
+                  priority={true}
+                  className="md:hidden w-8 h-8 rounded-lg drop-shadow-lg shadow-black"
+                />
+                <p className="ml-2 text-sm">v1.0.0</p>
+              </div>
               <PopoverButton className="h-6 w-6 ">
                 <XMarkIcon className="h-6 w-6" />
               </PopoverButton>

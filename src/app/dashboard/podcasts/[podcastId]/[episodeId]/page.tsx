@@ -80,7 +80,9 @@ const EpisodePage = () => {
     if (!userTrophiesData) return null;
     return userTrophiesData.some(
       (trophy) =>
-        trophy.userId === currentUser?.uid && trophy.trophyId === itemId
+        trophy.userId === currentUser?.uid &&
+        trophy.trophyId === itemId &&
+        trophy.answer !== -1
     );
   };
 
@@ -239,7 +241,7 @@ const EpisodePage = () => {
                       <div className="w-32 h-full relative">
                         <Image
                           src={item.photo}
-                          alt="Demo photo"
+                          alt="Trophy"
                           fill={true}
                           className="rounded-lg shadow-md object-cover"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
